@@ -275,7 +275,7 @@ const Login = () => {
           }}>
             <Button
               onClick={() => handleDirectLogin({
-                id: 1,
+                id: '550e8400-e29b-41d4-a716-446655440001',
                 nombre: 'Sebastián',
                 apellido: 'Maza',
                 email: 'sebastian@crosty.com',
@@ -308,7 +308,7 @@ const Login = () => {
 
             <Button
               onClick={() => handleDirectLogin({
-                id: 2,
+                id: '550e8400-e29b-41d4-a716-446655440002',
                 nombre: 'Santiago',
                 apellido: 'Maza',
                 email: 'mazasantiago.10@crosty.com',

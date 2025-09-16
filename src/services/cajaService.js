@@ -41,6 +41,8 @@ export async function crearMovimientoCaja(movimiento) {
   };
   
   try {
+    console.log('🔧 Intentando guardar en Supabase:', nuevoMovimiento);
+    
     // Intentar guardar en Supabase primero
     const { data, error } = await supabase
       .from(TABLES.MOVIMIENTOS_CAJA)
@@ -48,12 +50,15 @@ export async function crearMovimientoCaja(movimiento) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
     
     console.log('✅ Movimiento guardado en Supabase:', data);
     return data;
   } catch (error) {
-    console.error('Error guardando en Supabase, guardando localmente:', error);
+    console.error('❌ Error guardando en Supabase, guardando localmente:', error);
     
     // En caso de error, guardar localmente
     const movimientoLocal = {
