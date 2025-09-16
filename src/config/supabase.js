@@ -5,6 +5,11 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'your-anon-key';
 
+// Debug: Verificar que las variables de entorno se están cargando
+console.log('🔧 Supabase Config Debug:');
+console.log('URL:', supabaseUrl);
+console.log('Key:', supabaseAnonKey ? '✅ Configurada' : '❌ No configurada');
+
 // Crear cliente de Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
