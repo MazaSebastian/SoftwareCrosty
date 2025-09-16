@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider } from './context/AppContext';
+import backupService from './services/backupService';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import CajaDiaria from './pages/CajaDiaria';
@@ -14,7 +15,18 @@ import './App.css';
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
 
-  // Backup se inicializará cuando se acceda a la sección de configuración
+  // Inicializar sistema de backup
+  useEffect(() => {
+    try {
+      // Configurar backup automático cada 2 horas (120 minutos)
+      backupService.configurarBackupAutomatico(120);
+      // Limpiar backups antiguos (más de 30 días)
+      backupService.limpiarBackupsAntiguos(30);
+      console.log('🔄 Sistema de backup inicializado');
+    } catch (error) {
+      console.error('Error inicializando backup:', error);
+    }
+  }, []);
 
   const sections = [
     { id: 'dashboard', name: 'Dashboard', icon: '📊' },
