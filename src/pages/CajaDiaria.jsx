@@ -575,9 +575,9 @@ const CajaDiaria = () => {
                     </div>
                   </div>
                   <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: '1fr 1fr', 
-                    gap: '0.5rem',
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    gap: '0.25rem',
                     fontSize: '0.85rem',
                     color: '#666666'
                   }}>
