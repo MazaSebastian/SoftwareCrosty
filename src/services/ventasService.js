@@ -1,38 +1,5 @@
-// Datos mock para desarrollo
-let ventas = [
-  {
-    id: '1',
-    fecha: new Date().toISOString(),
-    tipo: 'tarta_salada',
-    recetaId: 'receta1',
-    recetaNombre: 'Tarta de Pollo',
-    cantidad: 5,
-    precioUnitario: 500,
-    subtotal: 2500,
-    metodoPago: 'efectivo',
-    cliente: 'Cliente 1',
-    notas: 'Para llevar',
-    usuarioId: 'socio1',
-    usuarioNombre: 'Socio 1',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    fecha: new Date().toISOString(),
-    tipo: 'pollo_condimentado',
-    recetaId: 'receta2',
-    recetaNombre: 'Pollo BBQ',
-    cantidad: 3,
-    precioUnitario: 800,
-    subtotal: 2400,
-    metodoPago: 'transferencia',
-    cliente: 'Cliente 2',
-    notas: 'Entrega a domicilio',
-    usuarioId: 'socio2',
-    usuarioNombre: 'Socio 2',
-    createdAt: new Date().toISOString()
-  }
-];
+// Datos mock para desarrollo - Iniciando con datos limpios
+let ventas = [];
 
 export async function obtenerVentas(filtros) {
   await new Promise(resolve => setTimeout(resolve, 100));

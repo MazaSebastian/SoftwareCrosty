@@ -1,35 +1,8 @@
 // Importar servicio de usuarios
 import { obtenerUsuarioActual, obtenerNombreCompleto } from './usuariosService';
 
-// Datos mock para desarrollo
-let movimientosCaja = [
-  {
-    id: '1',
-    fecha: new Date().toISOString(),
-    tipo: 'ingreso',
-    concepto: 'Venta Tartas',
-    monto: 5000,
-    metodo: 'efectivo',
-    usuarioId: 1,
-    usuarioNombre: 'Sebastián Maza',
-    descripcion: 'Venta de 10 tartas',
-    categoria: 'ventas',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    fecha: new Date().toISOString(),
-    tipo: 'egreso',
-    concepto: 'Compra Insumos',
-    monto: 1500,
-    metodo: 'transferencia',
-    usuarioId: 2,
-    usuarioNombre: 'María González',
-    descripcion: 'Compra de ingredientes',
-    categoria: 'insumos',
-    createdAt: new Date().toISOString()
-  }
-];
+// Datos mock para desarrollo - Iniciando con datos limpios
+let movimientosCaja = [];
 
 export async function obtenerMovimientosCaja() {
   // Simular delay de API

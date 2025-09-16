@@ -1,144 +1,139 @@
-// Datos mock para desarrollo
-let recetas = [
-  {
-    id: '1',
-    nombre: 'Tarta de Pollo',
-    tipo: 'tarta_salada',
-    descripcion: 'Tarta salada con pollo, cebolla y condimentos',
-    ingredientes: [
-      {
-        insumoId: '1',
-        insumoNombre: 'Pollo',
-        cantidad: 1,
-        unidad: 'kg',
-        costoUnitario: 1200,
-        costoTotal: 1200
-      },
-      {
-        insumoId: '2',
-        insumoNombre: 'Cebolla',
-        cantidad: 0.5,
-        unidad: 'kg',
-        costoUnitario: 300,
-        costoTotal: 150
-      },
-      {
-        insumoId: '3',
-        insumoNombre: 'Bolsa Vacío',
-        cantidad: 1,
-        unidad: 'unidades',
-        costoUnitario: 50,
-        costoTotal: 50
-      }
-    ],
-    costoTotalIngredientes: 1400,
-    rendimiento: 8,
-    costoPorPorcion: 175,
-    precioVenta: 500,
-    margenGanancia: 325,
-    tiempoPreparacion: 45,
-    instrucciones: '1. Cocinar el pollo\n2. Saltear la cebolla\n3. Mezclar ingredientes\n4. Envasar al vacío',
-    activa: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    nombre: 'Pollo BBQ',
-    tipo: 'pollo_condimentado',
-    descripcion: 'Pollo troceado con salsa BBQ',
-    ingredientes: [
-      {
-        insumoId: '1',
-        insumoNombre: 'Pollo',
-        cantidad: 2,
-        unidad: 'kg',
-        costoUnitario: 1200,
-        costoTotal: 2400
-      },
-      {
-        insumoId: '3',
-        insumoNombre: 'Bolsa Vacío',
-        cantidad: 1,
-        unidad: 'unidades',
-        costoUnitario: 50,
-        costoTotal: 50
-      }
-    ],
-    costoTotalIngredientes: 2450,
-    rendimiento: 6,
-    costoPorPorcion: 408.33,
-    precioVenta: 800,
-    margenGanancia: 391.67,
-    tiempoPreparacion: 30,
-    instrucciones: '1. Trocear el pollo\n2. Agregar salsa BBQ\n3. Envasar al vacío',
-    activa: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+// Datos mock para desarrollo - Iniciando con datos limpios
+let recetas = [];
 
 export async function obtenerRecetas() {
   await new Promise(resolve => setTimeout(resolve, 100));
   return [...recetas].sort((a, b) => a.nombre.localeCompare(b.nombre));
 }
 
-export async function obtenerRecetasActivas() {
-  const todasLasRecetas = await obtenerRecetas();
-  return todasLasRecetas.filter(r => r.activa);
-}
-
 export async function obtenerRecetaPorId(id) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return recetas.find(r => r.id === id) || null;
+  await new Promise(resolve => setTimeout(resolve, 50));
+  return recetas.find(receta => receta.id === id);
 }
 
 export async function crearReceta(receta) {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
   const nuevaReceta = {
     ...receta,
     id: Date.now().toString(),
+    activa: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
   
-  recetas.push(nuevaReceta);
+  recetas.unshift(nuevaReceta);
   return nuevaReceta;
 }
 
-export async function actualizarReceta(id, actualizaciones) {
-  const index = recetas.findIndex(r => r.id === id);
-  if (index !== -1) {
-    recetas[index] = {
-      ...recetas[index],
-      ...actualizaciones,
-      updatedAt: new Date().toISOString()
-    };
-    return recetas[index];
+export async function actualizarReceta(id, datosActualizacion) {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  const indice = recetas.findIndex(receta => receta.id === id);
+  if (indice === -1) {
+    throw new Error('Receta no encontrada');
   }
-  return null;
+  
+  recetas[indice] = {
+    ...recetas[indice],
+    ...datosActualizacion,
+    updatedAt: new Date().toISOString()
+  };
+  
+  return recetas[indice];
 }
 
 export async function eliminarReceta(id) {
-  const index = recetas.findIndex(r => r.id === id);
-  if (index !== -1) {
-    recetas[index].activa = false;
-    recetas[index].updatedAt = new Date().toISOString();
-    return true;
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  const indice = recetas.findIndex(receta => receta.id === id);
+  if (indice === -1) {
+    throw new Error('Receta no encontrada');
   }
-  return false;
+  
+  recetas[indice].activa = false;
+  return recetas[indice];
 }
 
-export async function calcularCostoReceta(ingredientes) {
-  return ingredientes.reduce((total, ingrediente) => total + ingrediente.costoTotal, 0);
+export async function calcularCostoReceta(receta) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  if (!receta.ingredientes || receta.ingredientes.length === 0) {
+    return 0;
+  }
+  
+  const costoTotal = receta.ingredientes.reduce((total, ingrediente) => {
+    return total + (ingrediente.cantidad * ingrediente.costoUnitario);
+  }, 0);
+  
+  return costoTotal;
 }
 
-export async function calcularCostoPorPorcion(costoTotal, rendimiento) {
-  return rendimiento > 0 ? costoTotal / rendimiento : 0;
+export async function calcularPrecioVenta(costoTotal, margenGanancia = 0.3) {
+  await new Promise(resolve => setTimeout(resolve, 50));
+  
+  return costoTotal * (1 + margenGanancia);
 }
 
-export async function calcularMargenGanancia(costoPorPorcion, precioVenta) {
-  return precioVenta - costoPorPorcion;
+export async function obtenerRecetasPorTipo(tipo) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return recetas.filter(receta => receta.tipo === tipo && receta.activa);
 }
 
+export async function buscarRecetas(termino) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const terminoLimpio = termino.toLowerCase();
+  return recetas.filter(receta => 
+    receta.nombre.toLowerCase().includes(terminoLimpio) ||
+    receta.descripcion.toLowerCase().includes(terminoLimpio) ||
+    receta.tipo.toLowerCase().includes(terminoLimpio)
+  );
+}
 
+export async function obtenerEstadisticasRecetas() {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const totalRecetas = recetas.length;
+  const recetasActivas = recetas.filter(r => r.activa).length;
+  const tipos = [...new Set(recetas.map(r => r.tipo))];
+  
+  const costoPromedio = totalRecetas > 0 ? 
+    recetas.reduce((sum, r) => sum + (r.costoTotalIngredientes || 0), 0) / totalRecetas : 0;
+  
+  const precioPromedio = totalRecetas > 0 ? 
+    recetas.reduce((sum, r) => sum + (r.precioVenta || 0), 0) / totalRecetas : 0;
+  
+  const margenPromedio = totalRecetas > 0 ? 
+    recetas.reduce((sum, r) => sum + (r.margenGanancia || 0), 0) / totalRecetas : 0;
+  
+  return {
+    totalRecetas,
+    recetasActivas,
+    tipos: tipos.length,
+    costoPromedio,
+    precioPromedio,
+    margenPromedio
+  };
+}
 
+export async function duplicarReceta(id) {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  const recetaOriginal = await obtenerRecetaPorId(id);
+  if (!recetaOriginal) {
+    throw new Error('Receta no encontrada');
+  }
+  
+  const nuevaReceta = {
+    ...recetaOriginal,
+    id: Date.now().toString(),
+    nombre: `${recetaOriginal.nombre} (Copia)`,
+    activa: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  recetas.unshift(nuevaReceta);
+  return nuevaReceta;
+}
