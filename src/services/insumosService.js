@@ -126,30 +126,92 @@ export async function crearInsumo(insumo) {
 export async function actualizarInsumo(id, datosActualizacion) {
   await new Promise(resolve => setTimeout(resolve, 200));
   
-  const indice = insumos.findIndex(insumo => insumo.id === id);
-  if (indice === -1) {
-    throw new Error('Insumo no encontrado');
+  try {
+    console.log('🔧 Intentando actualizar insumo con ID:', id);
+    console.log('🔧 Datos de actualización:', datosActualizacion);
+    
+    // Mapear campos del formulario a campos de Supabase
+    const datosMapeados = {
+      ...datosActualizacion,
+      precio_unitario: datosActualizacion.precioActual || datosActualizacion.precio_unitario,
+      fecha_ultima_compra: datosActualizacion.fechaUltimaCompra || datosActualizacion.fecha_ultima_compra,
+      updated_at: new Date().toISOString()
+    };
+    
+    // Intentar actualizar en Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.INSUMOS)
+      .update(datosMapeados)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Insumo actualizado en Supabase:', data);
+    
+    // Mapear respuesta al formato esperado por la interfaz
+    return {
+      ...data,
+      precioActual: data.precio_unitario,
+      fechaUltimaCompra: data.fecha_ultima_compra,
+      fechaUltimoPrecio: data.fecha_ultimo_precio
+    };
+  } catch (error) {
+    console.error('❌ Error actualizando en Supabase, intentando localmente:', error);
+    
+    // En caso de error, actualizar localmente
+    const indice = insumos.findIndex(insumo => insumo.id === id);
+    if (indice === -1) {
+      throw new Error('Insumo no encontrado');
+    }
+    
+    insumos[indice] = {
+      ...insumos[indice],
+      ...datosActualizacion,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return insumos[indice];
   }
-  
-  insumos[indice] = {
-    ...insumos[indice],
-    ...datosActualizacion,
-    updatedAt: new Date().toISOString()
-  };
-  
-  return insumos[indice];
 }
 
 export async function eliminarInsumo(id) {
   await new Promise(resolve => setTimeout(resolve, 200));
   
-  const indice = insumos.findIndex(insumo => insumo.id === id);
-  if (indice === -1) {
-    throw new Error('Insumo no encontrado');
+  try {
+    console.log('🔧 Intentando eliminar insumo con ID:', id);
+    
+    // Intentar eliminar desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.INSUMOS)
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Insumo eliminado de Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error eliminando de Supabase, intentando localmente:', error);
+    
+    // En caso de error, intentar eliminar localmente
+    const indice = insumos.findIndex(insumo => insumo.id === id);
+    if (indice === -1) {
+      throw new Error('Insumo no encontrado');
+    }
+    
+    insumos[indice].activo = false;
+    return insumos[indice];
   }
-  
-  insumos[indice].activo = false;
-  return insumos[indice];
 }
 
 // Funciones para gestión de precios
