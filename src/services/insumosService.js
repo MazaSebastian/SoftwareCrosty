@@ -44,12 +44,19 @@ export async function crearInsumo(insumo) {
   console.log('🔧 Usuario actual:', usuarioActual);
   
   const nuevoInsumo = {
-    ...insumo,
+    nombre: insumo.nombre,
+    categoria: insumo.categoria,
+    unidad: insumo.unidad,
     cantidad: parseFloat(insumo.cantidad) || 0,
-    usuario_id: usuarioActual?.id || null,
-    usuario_nombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
+    precio_unitario: parseFloat(insumo.precioActual) || 0,
+    stock_actual: parseFloat(insumo.cantidad) || 0, // Usar cantidad como stock inicial
+    stock_minimo: 0, // Valor por defecto
+    proveedor: insumo.proveedor || null,
+    descripcion: insumo.descripcion || null,
     fecha_ultima_compra: insumo.fechaUltimaCompra || null,
     fecha_ultimo_precio: new Date().toISOString(),
+    usuario_id: usuarioActual?.id || null,
+    usuario_nombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
     activo: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
