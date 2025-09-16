@@ -565,16 +565,19 @@ const CajaDiaria = () => {
                     marginBottom: '0.5rem'
                   }}>
                     <div style={{ 
-                      color: 'white', 
-                      fontWeight: '600',
-                      fontSize: '1.1rem',
-                      backgroundColor: 'rgba(255, 0, 0, 0.1)', // Debug: fondo rojo temporal
-                      padding: '0.25rem',
-                      borderRadius: '4px'
+                      color: '#FF0000', // Rojo brillante para debug
+                      fontWeight: 'bold',
+                      fontSize: '1.2rem',
+                      backgroundColor: '#FFFF00', // Amarillo brillante
+                      padding: '0.5rem',
+                      borderRadius: '4px',
+                      border: '2px solid #00FF00', // Verde brillante
+                      minWidth: '200px',
+                      textAlign: 'center'
                     }}>
-                      {saldo.usuarioNombre || 'Usuario sin nombre'}
-                      <div style={{ fontSize: '0.8rem', color: 'yellow' }}>
-                        DEBUG: {saldo.usuarioId}
+                      NOMBRE: {saldo.usuarioNombre || 'Usuario sin nombre'}
+                      <div style={{ fontSize: '0.9rem', color: '#0000FF', marginTop: '0.25rem' }}>
+                        ID: {saldo.usuarioId}
                       </div>
                     </div>
                     <div style={{ 
