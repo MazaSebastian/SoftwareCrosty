@@ -42,6 +42,7 @@
   },
   "author": "CROSTY Software",
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "@types/styled-components": "^5.1.34",
     "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",

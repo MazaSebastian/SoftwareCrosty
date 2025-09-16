@@ -16,6 +16,7 @@ const Ventas = lazy(() => import('./pages/Ventas'));
 const Reportes = lazy(() => import('./pages/Reportes'));
 const GestionUsuarios = lazy(() => import('./pages/GestionUsuarios'));
 const Configuracion = lazy(() => import('./pages/Configuracion'));
+const ConfiguracionSupabase = lazy(() => import('./pages/ConfiguracionSupabase'));
 const AutomatizacionPrecios = lazy(() => import('./pages/AutomatizacionPrecios'));
 
 function App() {
@@ -48,7 +49,8 @@ function App() {
     { id: 'reportes', name: 'Reportes', icon: '📈' },
     { id: 'usuarios', name: 'Usuarios', icon: '👥' },
     { id: 'automatizacion', name: 'Automatización', icon: '🤖' },
-    { id: 'configuracion', name: 'Configuración', icon: '⚙️' }
+    { id: 'configuracion', name: 'Configuración', icon: '⚙️' },
+    { id: 'supabase', name: 'Supabase', icon: '☁️' }
   ];
 
   const renderContent = () => {
@@ -73,6 +75,8 @@ function App() {
         return <AutomatizacionPrecios />;
       case 'configuracion':
         return <Configuracion />;
+      case 'supabase':
+        return <ConfiguracionSupabase />;
       default:
         return <Dashboard />;
     }

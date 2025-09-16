@@ -7,8 +7,11 @@ import * as stockService from './stockService';
 import * as reportesService from './reportesService';
 import * as usuariosService from './usuariosService';
 import backupService from './backupService';
+import migrationService from './migrationService';
+import syncService from './syncService';
+import * as supabaseAdapters from './supabaseAdapters';
 
-export { cajaService, insumosService, recetasService, ventasService, stockService, reportesService, usuariosService, backupService };
+export { cajaService, insumosService, recetasService, ventasService, stockService, reportesService, usuariosService, backupService, migrationService, syncService, supabaseAdapters };
 
 // Funciones específicas para backup
 export const obtenerMovimientosCaja = () => {
