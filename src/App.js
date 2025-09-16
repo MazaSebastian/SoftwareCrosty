@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppProvider } from './context/AppContext';
 import backupService from './services/backupService';
+import automatizacionPreciosService from './services/automatizacionPreciosService';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import CajaDiaria from './pages/CajaDiaria';
@@ -10,12 +11,13 @@ import Stock from './pages/Stock';
 import Ventas from './pages/Ventas';
 import Reportes from './pages/Reportes';
 import Configuracion from './pages/Configuracion';
+import AutomatizacionPrecios from './pages/AutomatizacionPrecios';
 import './App.css';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
 
-  // Inicializar sistema de backup
+  // Inicializar sistemas automáticos
   useEffect(() => {
     try {
       // Configurar backup automático cada 2 horas (120 minutos)
@@ -23,8 +25,12 @@ function App() {
       // Limpiar backups antiguos (más de 30 días)
       backupService.limpiarBackupsAntiguos(30);
       console.log('🔄 Sistema de backup inicializado');
+
+      // Inicializar sistema de automatización de precios
+      automatizacionPreciosService.inicializar();
+      console.log('🤖 Sistema de automatización de precios inicializado');
     } catch (error) {
-      console.error('Error inicializando backup:', error);
+      console.error('Error inicializando sistemas:', error);
     }
   }, []);
 
@@ -36,6 +42,7 @@ function App() {
     { id: 'stock', name: 'Control de Stock', icon: '📦' },
     { id: 'ventas', name: 'Ventas', icon: '🛒' },
     { id: 'reportes', name: 'Reportes', icon: '📈' },
+    { id: 'automatizacion', name: 'Automatización', icon: '🤖' },
     { id: 'configuracion', name: 'Configuración', icon: '⚙️' }
   ];
 
@@ -55,6 +62,8 @@ function App() {
         return <Ventas />;
       case 'reportes':
         return <Reportes />;
+      case 'automatizacion':
+        return <AutomatizacionPrecios />;
       case 'configuracion':
         return <Configuracion />;
       default:
