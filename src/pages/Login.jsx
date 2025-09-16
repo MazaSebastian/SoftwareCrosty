@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { supabase } from '../config/supabase';
 import { useApp } from '../context/AppContext';
+import { obtenerUsuarios, establecerUsuarioActual } from '../services/usuariosService';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -215,16 +216,26 @@ const Login = () => {
 
   const cargarUsuarios = async () => {
     try {
+      // Primero intentar cargar desde Supabase
       const { data, error } = await supabase
         .from('usuarios')
         .select('*')
         .eq('activo', true)
         .order('nombre');
 
-      if (error) throw error;
-      setUsuarios(data || []);
+      if (error || !data || data.length === 0) {
+        // Si no hay usuarios en Supabase, usar usuarios mock
+        console.log('Usando usuarios mock locales');
+        const usuariosMock = obtenerUsuarios();
+        setUsuarios(usuariosMock);
+      } else {
+        setUsuarios(data);
+      }
     } catch (error) {
-      console.error('Error cargando usuarios:', error);
+      console.error('Error cargando usuarios, usando mock:', error);
+      // En caso de error, usar usuarios mock
+      const usuariosMock = obtenerUsuarios();
+      setUsuarios(usuariosMock);
     }
   };
 
@@ -235,7 +246,24 @@ const Login = () => {
     setSuccess('');
 
     try {
-      // Buscar usuario por email
+      // Primero buscar en usuarios mock locales
+      const usuariosMock = obtenerUsuarios();
+      const usuarioMock = usuariosMock.find(u => u.email === email && u.activo);
+      
+      if (usuarioMock) {
+        // Usuario encontrado en mock, establecer como usuario actual
+        establecerUsuarioActual(usuarioMock);
+        setUsuario(usuarioMock);
+        setSuccess('¡Inicio de sesión exitoso!');
+        
+        // Redirigir al dashboard después de un breve delay
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+        return;
+      }
+
+      // Si no se encuentra en mock, intentar con Supabase
       const { data: usuario, error: userError } = await supabase
         .from('usuarios')
         .select('*')
@@ -283,13 +311,8 @@ const Login = () => {
     try {
       setSuccess(`¡Bienvenido, ${usuario.nombre} ${usuario.apellido}!`);
       
-      // Actualizar último acceso
-      await supabase
-        .from('usuarios')
-        .update({ ultimo_acceso: new Date().toISOString() })
-        .eq('id', usuario.id);
-
-      // Establecer usuario actual
+      // Establecer usuario actual en el servicio local
+      establecerUsuarioActual(usuario);
       setUsuario(usuario);
       
       // Guardar en localStorage
