@@ -17,9 +17,14 @@ export async function obtenerInsumos() {
 
     if (error) throw error;
     
-    // Si hay datos en Supabase, usarlos
+    // Si hay datos en Supabase, mapearlos al formato esperado por la interfaz
     if (data && data.length > 0) {
-      return data;
+      return data.map(insumo => ({
+        ...insumo,
+        precioActual: insumo.precio_unitario, // Mapear precio_unitario a precioActual
+        fechaUltimaCompra: insumo.fecha_ultima_compra, // Mapear fecha_ultima_compra
+        fechaUltimoPrecio: insumo.fecha_ultimo_precio // Mapear fecha_ultimo_precio
+      }));
     }
     
     // Si no hay datos en Supabase, usar datos locales
@@ -33,6 +38,31 @@ export async function obtenerInsumos() {
 
 export async function obtenerInsumoPorId(id) {
   await new Promise(resolve => setTimeout(resolve, 50));
+  
+  try {
+    // Intentar obtener desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.INSUMOS)
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    
+    if (data) {
+      // Mapear al formato esperado por la interfaz
+      return {
+        ...data,
+        precioActual: data.precio_unitario,
+        fechaUltimaCompra: data.fecha_ultima_compra,
+        fechaUltimoPrecio: data.fecha_ultimo_precio
+      };
+    }
+  } catch (error) {
+    console.error('Error obteniendo insumo desde Supabase, usando datos locales:', error);
+  }
+  
+  // Fallback a datos locales
   return insumos.find(insumo => insumo.id === id);
 }
 
