@@ -333,6 +333,9 @@ const CajaDiaria = () => {
       setSaldos(resumenData.saldosUsuarios);
       setSaldoGeneral(resumenData.saldoGeneral);
       setResumenCompleto(resumenData);
+      
+      console.log('🔧 Saldos cargados:', resumenData.saldosUsuarios);
+      console.log('🔧 Primer saldo:', resumenData.saldosUsuarios[0]);
     } catch (error) {
       console.error('Error al cargar datos:', error);
     }
@@ -544,7 +547,9 @@ const CajaDiaria = () => {
                 No hay saldos registrados
               </div>
             ) : (
-              saldos.map(saldo => (
+              saldos.map(saldo => {
+                console.log('🔧 Renderizando saldo:', saldo);
+                return (
                 <div key={saldo.usuarioId} style={{ 
                   padding: '1rem', 
                   marginBottom: '1rem', 
@@ -559,7 +564,7 @@ const CajaDiaria = () => {
                     marginBottom: '0.5rem'
                   }}>
                     <div style={{ color: 'white', fontWeight: '600' }}>
-                      {saldo.usuarioNombre}
+                      {saldo.usuarioNombre || 'Usuario sin nombre'}
                     </div>
                     <div style={{ 
                       color: saldo.saldoTotal >= 0 ? '#10b981' : '#ef4444',
@@ -580,7 +585,8 @@ const CajaDiaria = () => {
                     <div>Transferencia: {formatCurrency(saldo.saldoTransferencia)}</div>
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
         </Section>
