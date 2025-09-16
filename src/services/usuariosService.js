@@ -19,9 +19,9 @@ const usuariosMock = [
   },
   {
     id: 2,
-    nombre: 'María',
-    apellido: 'González',
-    email: 'maria@crosty.com',
+    nombre: 'Santiago',
+    apellido: 'Maza',
+    email: 'mazasantiago.10@crosty.com',
     rol: 'usuario',
     activo: true,
     fechaCreacion: '2024-01-01T00:00:00Z',

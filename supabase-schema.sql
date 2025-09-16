@@ -239,7 +239,7 @@ CREATE POLICY "automatizacion_precios_delete_policy" ON automatizacion_precios F
 -- Insertar usuarios por defecto
 INSERT INTO usuarios (id, nombre, apellido, email, rol, activo) VALUES
     ('550e8400-e29b-41d4-a716-446655440001', 'Sebastián', 'Maza', 'sebastian@crosty.com', 'admin', true),
-    ('550e8400-e29b-41d4-a716-446655440002', 'María', 'González', 'maria@crosty.com', 'usuario', true)
+    ('550e8400-e29b-41d4-a716-446655440002', 'Santiago', 'Maza', 'mazasantiago.10@crosty.com', 'usuario', true)
 ON CONFLICT (email) DO NOTHING;
 
 -- Insertar configuración por defecto
