@@ -4,6 +4,8 @@ import backupService from './services/backupService';
 import automatizacionPreciosService from './services/automatizacionPreciosService';
 import Sidebar from './components/Sidebar';
 import { SectionLoading } from './components/LoadingSpinner';
+import ProtectedRoute from './components/ProtectedRoute';
+import LogoutButton from './components/LogoutButton';
 import './App.css';
 
 // Lazy loading de páginas para mejorar la velocidad de carga
@@ -84,30 +86,33 @@ function App() {
 
   return (
     <AppProvider>
-      <div className="App">
-        <header className="app-header">
-          <div className="header-content">
-            <h1>🍕 CROSTY - Alimentos Congelados al Vacío</h1>
-            <div className="header-info">
-              <span>Versión 1.0.0</span>
+      <ProtectedRoute>
+        <div className="App">
+          <header className="app-header">
+            <div className="header-content">
+              <h1>🍕 CROSTY - Alimentos Congelados al Vacío</h1>
+              <div className="header-info">
+                <span>Versión 1.0.0</span>
+                <LogoutButton />
+              </div>
             </div>
+          </header>
+
+          <div className="app-body">
+            <Sidebar 
+              sections={sections}
+              currentSection={currentSection}
+              onSectionChange={setCurrentSection}
+            />
+
+            <main className="main-content">
+              <Suspense fallback={<SectionLoading text="Cargando sección..." />}>
+                {renderContent()}
+              </Suspense>
+            </main>
           </div>
-        </header>
-
-        <div className="app-body">
-          <Sidebar 
-            sections={sections}
-            currentSection={currentSection}
-            onSectionChange={setCurrentSection}
-          />
-
-          <main className="main-content">
-            <Suspense fallback={<SectionLoading text="Cargando sección..." />}>
-              {renderContent()}
-            </Suspense>
-          </main>
         </div>
-      </div>
+      </ProtectedRoute>
     </AppProvider>
   );
 }
