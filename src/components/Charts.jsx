@@ -251,6 +251,9 @@ export const MetricsGrid = styled.div`
   margin-bottom: 30px;
 `;
 
+// Exportar ChartsGrid individualmente
+export { ChartsGrid };
+
 // Exportar colores para uso en otros componentes
 export { colors };
 
