@@ -1,11 +1,34 @@
+// Importar servicio de usuarios y Supabase
+import { obtenerUsuarioActual, obtenerNombreCompleto } from './usuariosService';
+import { supabase, TABLES } from '../config/supabase';
+
 // Datos mock para desarrollo - Iniciando con datos limpios
 let insumos = [];
 
 let historialPrecios = [];
 
 export async function obtenerInsumos() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return [...insumos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  try {
+    // Intentar obtener desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.INSUMOS)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    // Si hay datos en Supabase, usarlos
+    if (data && data.length > 0) {
+      return data;
+    }
+    
+    // Si no hay datos en Supabase, usar datos locales
+    return [...insumos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  } catch (error) {
+    console.error('Error obteniendo insumos desde Supabase, usando datos locales:', error);
+    // En caso de error, usar datos locales
+    return [...insumos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
 }
 
 export async function obtenerInsumoPorId(id) {
@@ -14,21 +37,53 @@ export async function obtenerInsumoPorId(id) {
 }
 
 export async function crearInsumo(insumo) {
-  await new Promise(resolve => setTimeout(resolve, 200));
+  // Obtener usuario actual
+  const usuarioActual = obtenerUsuarioActual();
+  
+  console.log('🔧 crearInsumo llamado con:', insumo);
+  console.log('🔧 Usuario actual:', usuarioActual);
   
   const nuevoInsumo = {
     ...insumo,
-    id: Date.now().toString(),
     cantidad: parseFloat(insumo.cantidad) || 0,
-    fechaUltimaCompra: null,
-    fechaUltimoPrecio: new Date().toISOString(),
+    usuario_id: usuarioActual?.id || null,
+    usuario_nombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
+    fecha_ultima_compra: insumo.fechaUltimaCompra || null,
+    fecha_ultimo_precio: new Date().toISOString(),
     activo: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
   
-  insumos.unshift(nuevoInsumo);
-  return nuevoInsumo;
+  try {
+    console.log('🔧 Intentando guardar insumo en Supabase:', nuevoInsumo);
+    
+    // Intentar guardar en Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.INSUMOS)
+      .insert([nuevoInsumo])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Insumo guardado en Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error guardando en Supabase, guardando localmente:', error);
+    
+    // En caso de error, guardar localmente
+    const insumoLocal = {
+      ...nuevoInsumo,
+      id: Date.now().toString()
+    };
+    
+    insumos.unshift(insumoLocal);
+    return insumoLocal;
+  }
 }
 
 export async function actualizarInsumo(id, datosActualizacion) {
