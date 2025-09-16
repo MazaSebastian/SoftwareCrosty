@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { AppProvider } from './context/AppContext';
 import backupService from './services/backupService';
 import automatizacionPreciosService from './services/automatizacionPreciosService';
 import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
-import CajaDiaria from './pages/CajaDiaria';
-import Insumos from './pages/Insumos';
-import Recetas from './pages/Recetas';
-import Stock from './pages/Stock';
-import Ventas from './pages/Ventas';
-import Reportes from './pages/Reportes';
-import Configuracion from './pages/Configuracion';
-import AutomatizacionPrecios from './pages/AutomatizacionPrecios';
+import { SectionLoading } from './components/LoadingSpinner';
 import './App.css';
+
+// Lazy loading de páginas para mejorar la velocidad de carga
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const CajaDiaria = lazy(() => import('./pages/CajaDiaria'));
+const Insumos = lazy(() => import('./pages/Insumos'));
+const Recetas = lazy(() => import('./pages/Recetas'));
+const Stock = lazy(() => import('./pages/Stock'));
+const Ventas = lazy(() => import('./pages/Ventas'));
+const Reportes = lazy(() => import('./pages/Reportes'));
+const GestionUsuarios = lazy(() => import('./pages/GestionUsuarios'));
+const Configuracion = lazy(() => import('./pages/Configuracion'));
+const AutomatizacionPrecios = lazy(() => import('./pages/AutomatizacionPrecios'));
 
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
@@ -42,6 +46,7 @@ function App() {
     { id: 'stock', name: 'Control de Stock', icon: '📦' },
     { id: 'ventas', name: 'Ventas', icon: '🛒' },
     { id: 'reportes', name: 'Reportes', icon: '📈' },
+    { id: 'usuarios', name: 'Usuarios', icon: '👥' },
     { id: 'automatizacion', name: 'Automatización', icon: '🤖' },
     { id: 'configuracion', name: 'Configuración', icon: '⚙️' }
   ];
@@ -62,6 +67,8 @@ function App() {
         return <Ventas />;
       case 'reportes':
         return <Reportes />;
+      case 'usuarios':
+        return <GestionUsuarios />;
       case 'automatizacion':
         return <AutomatizacionPrecios />;
       case 'configuracion':
@@ -91,7 +98,9 @@ function App() {
           />
 
           <main className="main-content">
-            {renderContent()}
+            <Suspense fallback={<SectionLoading text="Cargando sección..." />}>
+              {renderContent()}
+            </Suspense>
           </main>
         </div>
       </div>

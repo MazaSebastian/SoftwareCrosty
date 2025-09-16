@@ -8,12 +8,16 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
+    "build:optimize": "GENERATE_SOURCEMAP=false npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
     "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron-pack": "npm run build && electron-builder",
-    "preelectron-pack": "npm run build"
+    "preelectron-pack": "npm run build",
+    "performance:test": "npm run build && lighthouse http://localhost:3000 --output=html --output-path=./performance-report.html",
+    "bundle:analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js"
   },
   "build": {
     "appId": "com.crosty.gastronomia",

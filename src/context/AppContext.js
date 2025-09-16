@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { calcularEstadisticas } from '../services/estadisticasService';
+import { cargarUsuarioActual, establecerUsuarioActual } from '../services/usuariosService';
 
 const AppContext = createContext(undefined);
 
@@ -9,35 +10,38 @@ export const AppProvider = ({ children }) => {
 
   // Cargar usuario desde localStorage al iniciar
   useEffect(() => {
-    const usuarioGuardado = localStorage.getItem('crosty_usuario');
-    if (usuarioGuardado) {
+    const cargarUsuario = () => {
       try {
-        setUsuario(JSON.parse(usuarioGuardado));
+        const usuarioGuardado = cargarUsuarioActual();
+        if (usuarioGuardado) {
+          setUsuario(usuarioGuardado);
+        }
       } catch (error) {
         console.error('Error al cargar usuario:', error);
-        localStorage.removeItem('crosty_usuario');
       }
-    }
+    };
+
+    cargarUsuario();
   }, []);
 
   // Guardar usuario en localStorage cuando cambie
   useEffect(() => {
     if (usuario) {
-      localStorage.setItem('crosty_usuario', JSON.stringify(usuario));
-    } else {
-      localStorage.removeItem('crosty_usuario');
+      establecerUsuarioActual(usuario);
     }
   }, [usuario]);
 
-  // Actualizar estadísticas
-  const actualizarEstadisticas = async () => {
+  // Actualizar estadísticas (memoizada para evitar re-renders)
+  const actualizarEstadisticas = useCallback(async () => {
     try {
       const stats = await calcularEstadisticas();
       setEstadisticas(stats);
+      return stats;
     } catch (error) {
       console.error('Error al actualizar estadísticas:', error);
+      throw error;
     }
-  };
+  }, []);
 
   // Cargar estadísticas al iniciar y cuando cambie el usuario
   useEffect(() => {
@@ -46,13 +50,14 @@ export const AppProvider = ({ children }) => {
     }
   }, [usuario]);
 
-  const value = {
+  // Memoizar el valor del contexto para evitar re-renders innecesarios
+  const value = useMemo(() => ({
     usuario,
     setUsuario,
     estadisticas,
     setEstadisticas,
     actualizarEstadisticas
-  };
+  }), [usuario, estadisticas, actualizarEstadisticas]);
 
   return (
     <AppContext.Provider value={value}>

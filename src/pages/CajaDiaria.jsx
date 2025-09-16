@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { obtenerMovimientosCaja, crearMovimientoCaja, obtenerSaldosUsuarios, eliminarMovimientoCaja } from '../services/cajaService';
+import { 
+  obtenerMovimientosCaja, 
+  crearMovimientoCaja, 
+  obtenerSaldosUsuarios, 
+  eliminarMovimientoCaja,
+  obtenerSaldoGeneralCrosty,
+  obtenerResumenCajaCompleto
+} from '../services/cajaService';
 import { useApp } from '../context/AppContext';
+import UsuarioSelector from '../components/UsuarioSelector';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -294,16 +302,17 @@ const CajaDiaria = () => {
   const { actualizarEstadisticas } = useApp();
   const [movimientos, setMovimientos] = useState([]);
   const [saldos, setSaldos] = useState([]);
+  const [saldoGeneral, setSaldoGeneral] = useState(null);
+  const [resumenCompleto, setResumenCompleto] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [usuarioActual, setUsuarioActual] = useState(null);
   const [formData, setFormData] = useState({
     tipo: 'ingreso',
     concepto: '',
     monto: '',
     metodo: 'efectivo',
     descripcion: '',
-    categoria: '',
-    usuarioId: 'socio1',
-    usuarioNombre: 'Socio 1'
+    categoria: ''
   });
 
   useEffect(() => {
@@ -312,15 +321,21 @@ const CajaDiaria = () => {
 
   const cargarDatos = async () => {
     try {
-      const [movimientosData, saldosData] = await Promise.all([
+      const [movimientosData, resumenData] = await Promise.all([
         obtenerMovimientosCaja(),
-        obtenerSaldosUsuarios()
+        obtenerResumenCajaCompleto()
       ]);
       setMovimientos(movimientosData);
-      setSaldos(saldosData);
+      setSaldos(resumenData.saldosUsuarios);
+      setSaldoGeneral(resumenData.saldoGeneral);
+      setResumenCompleto(resumenData);
     } catch (error) {
       console.error('Error al cargar datos:', error);
     }
+  };
+
+  const handleUsuarioChange = (usuario) => {
+    setUsuarioActual(usuario);
   };
 
   const handleSubmit = async (e) => {
@@ -343,9 +358,7 @@ const CajaDiaria = () => {
         monto: '',
         metodo: 'efectivo',
         descripcion: '',
-        categoria: '',
-        usuarioId: 'socio1',
-        usuarioNombre: 'Socio 1'
+        categoria: ''
       });
     } catch (error) {
       console.error('Error al crear movimiento:', error);
@@ -404,13 +417,37 @@ const CajaDiaria = () => {
         </Button>
       </Header>
 
+      <UsuarioSelector onUsuarioChange={handleUsuarioChange} />
+
       <StatsGrid>
         <StatCard className="success">
+          <div className="stat-header">
+            <div className="stat-title">Saldo General CROSTY</div>
+            <div className="stat-icon">🏢</div>
+          </div>
+          <div className="stat-value">
+            {saldoGeneral ? formatCurrency(saldoGeneral.saldoTotal) : formatCurrency(0)}
+          </div>
+          <div className="stat-subtitle">
+            {saldoGeneral ? (
+              <>
+                Efectivo: {formatCurrency(saldoGeneral.saldoEfectivo)} • 
+                Transferencia: {formatCurrency(saldoGeneral.saldoTransferencia)}
+              </>
+            ) : (
+              'Cargando...'
+            )}
+          </div>
+        </StatCard>
+
+        <StatCard className="info">
           <div className="stat-header">
             <div className="stat-title">Total Ingresos</div>
             <div className="stat-icon">💰</div>
           </div>
-          <div className="stat-value">{formatCurrency(totalIngresos)}</div>
+          <div className="stat-value">
+            {saldoGeneral ? formatCurrency(saldoGeneral.totalIngresos) : formatCurrency(totalIngresos)}
+          </div>
           <div className="stat-subtitle">
             {movimientos.filter(m => m.tipo === 'ingreso').length} movimientos
           </div>
@@ -421,31 +458,24 @@ const CajaDiaria = () => {
             <div className="stat-title">Total Egresos</div>
             <div className="stat-icon">💸</div>
           </div>
-          <div className="stat-value">{formatCurrency(totalEgresos)}</div>
+          <div className="stat-value">
+            {saldoGeneral ? formatCurrency(saldoGeneral.totalEgresos) : formatCurrency(totalEgresos)}
+          </div>
           <div className="stat-subtitle">
             {movimientos.filter(m => m.tipo === 'egreso').length} movimientos
           </div>
         </StatCard>
 
-        <StatCard className={saldoTotal >= 0 ? 'success' : 'danger'}>
+        <StatCard className={saldoGeneral?.utilidad >= 0 ? 'success' : 'danger'}>
           <div className="stat-header">
-            <div className="stat-title">Saldo Total</div>
-            <div className="stat-icon">🏦</div>
+            <div className="stat-title">Utilidad</div>
+            <div className="stat-icon">📈</div>
           </div>
-          <div className="stat-value">{formatCurrency(saldoTotal)}</div>
+          <div className="stat-value">
+            {saldoGeneral ? formatCurrency(saldoGeneral.utilidad) : formatCurrency(saldoTotal)}
+          </div>
           <div className="stat-subtitle">
-            {saldoTotal >= 0 ? 'Positivo' : 'Negativo'}
-          </div>
-        </StatCard>
-
-        <StatCard className="info">
-          <div className="stat-header">
-            <div className="stat-title">Movimientos Hoy</div>
-            <div className="stat-icon">📊</div>
-          </div>
-          <div className="stat-value">{movimientos.length}</div>
-          <div className="stat-subtitle">
-            Total de transacciones
+            {saldoGeneral?.utilidad >= 0 ? 'Positiva' : 'Negativa'}
           </div>
         </StatCard>
       </StatsGrid>

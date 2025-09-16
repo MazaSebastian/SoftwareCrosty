@@ -1,3 +1,6 @@
+// Importar servicio de usuarios
+import { obtenerUsuarioActual, obtenerNombreCompleto } from './usuariosService';
+
 // Datos mock para desarrollo
 let movimientosCaja = [
   {
@@ -7,8 +10,8 @@ let movimientosCaja = [
     concepto: 'Venta Tartas',
     monto: 5000,
     metodo: 'efectivo',
-    usuarioId: 'socio1',
-    usuarioNombre: 'Socio 1',
+    usuarioId: 1,
+    usuarioNombre: 'Sebastián Maza',
     descripcion: 'Venta de 10 tartas',
     categoria: 'ventas',
     createdAt: new Date().toISOString()
@@ -20,8 +23,8 @@ let movimientosCaja = [
     concepto: 'Compra Insumos',
     monto: 1500,
     metodo: 'transferencia',
-    usuarioId: 'socio2',
-    usuarioNombre: 'Socio 2',
+    usuarioId: 2,
+    usuarioNombre: 'María González',
     descripcion: 'Compra de ingredientes',
     categoria: 'insumos',
     createdAt: new Date().toISOString()
@@ -35,9 +38,14 @@ export async function obtenerMovimientosCaja() {
 }
 
 export async function crearMovimientoCaja(movimiento) {
+  // Obtener usuario actual
+  const usuarioActual = obtenerUsuarioActual();
+  
   const nuevoMovimiento = {
     ...movimiento,
     id: Date.now().toString(),
+    usuarioId: usuarioActual?.id || null,
+    usuarioNombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
     createdAt: new Date().toISOString()
   };
   
@@ -94,6 +102,106 @@ export async function eliminarMovimientoCaja(id) {
     return true;
   }
   return false;
+}
+
+// Obtener saldo general de CROSTY (suma de todos los usuarios)
+export async function obtenerSaldoGeneralCrosty() {
+  const movimientos = await obtenerMovimientosCaja();
+  
+  let saldoEfectivo = 0;
+  let saldoTransferencia = 0;
+  let totalIngresos = 0;
+  let totalEgresos = 0;
+  
+  movimientos.forEach(movimiento => {
+    if (movimiento.tipo === 'ingreso') {
+      totalIngresos += movimiento.monto;
+      if (movimiento.metodo === 'efectivo') {
+        saldoEfectivo += movimiento.monto;
+      } else {
+        saldoTransferencia += movimiento.monto;
+      }
+    } else {
+      totalEgresos += movimiento.monto;
+      if (movimiento.metodo === 'efectivo') {
+        saldoEfectivo -= movimiento.monto;
+      } else {
+        saldoTransferencia -= movimiento.monto;
+      }
+    }
+  });
+  
+  return {
+    saldoEfectivo,
+    saldoTransferencia,
+    saldoTotal: saldoEfectivo + saldoTransferencia,
+    totalIngresos,
+    totalEgresos,
+    utilidad: totalIngresos - totalEgresos,
+    ultimaActualizacion: new Date().toISOString()
+  };
+}
+
+// Obtener movimientos por usuario específico
+export async function obtenerMovimientosPorUsuario(usuarioId) {
+  const movimientos = await obtenerMovimientosCaja();
+  return movimientos.filter(movimiento => movimiento.usuarioId === usuarioId);
+}
+
+// Obtener estadísticas por usuario
+export async function obtenerEstadisticasPorUsuario(usuarioId) {
+  const movimientos = await obtenerMovimientosPorUsuario(usuarioId);
+  
+  let saldoEfectivo = 0;
+  let saldoTransferencia = 0;
+  let totalIngresos = 0;
+  let totalEgresos = 0;
+  let cantidadMovimientos = movimientos.length;
+  
+  movimientos.forEach(movimiento => {
+    if (movimiento.tipo === 'ingreso') {
+      totalIngresos += movimiento.monto;
+      if (movimiento.metodo === 'efectivo') {
+        saldoEfectivo += movimiento.monto;
+      } else {
+        saldoTransferencia += movimiento.monto;
+      }
+    } else {
+      totalEgresos += movimiento.monto;
+      if (movimiento.metodo === 'efectivo') {
+        saldoEfectivo -= movimiento.monto;
+      } else {
+        saldoTransferencia -= movimiento.monto;
+      }
+    }
+  });
+  
+  return {
+    usuarioId,
+    saldoEfectivo,
+    saldoTransferencia,
+    saldoTotal: saldoEfectivo + saldoTransferencia,
+    totalIngresos,
+    totalEgresos,
+    cantidadMovimientos,
+    utilidad: totalIngresos - totalEgresos,
+    ultimaActualizacion: new Date().toISOString()
+  };
+}
+
+// Obtener resumen de caja con usuarios y saldo general
+export async function obtenerResumenCajaCompleto() {
+  const [saldosUsuarios, saldoGeneral] = await Promise.all([
+    obtenerSaldosUsuarios(),
+    obtenerSaldoGeneralCrosty()
+  ]);
+  
+  return {
+    saldoGeneral,
+    saldosUsuarios,
+    totalUsuarios: saldosUsuarios.length,
+    ultimaActualizacion: new Date().toISOString()
+  };
 }
 
 

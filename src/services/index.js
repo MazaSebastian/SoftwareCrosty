@@ -5,9 +5,10 @@ import * as recetasService from './recetasService';
 import * as ventasService from './ventasService';
 import * as stockService from './stockService';
 import * as reportesService from './reportesService';
+import * as usuariosService from './usuariosService';
 import backupService from './backupService';
 
-export { cajaService, insumosService, recetasService, ventasService, stockService, reportesService, backupService };
+export { cajaService, insumosService, recetasService, ventasService, stockService, reportesService, usuariosService, backupService };
 
 // Funciones específicas para backup
 export const obtenerMovimientosCaja = () => {

@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useApp } from '../context/AppContext';
+import { useMemoizedData } from '../hooks/useMemoizedData';
 // Funciones de fecha simples
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('es-AR', {
@@ -198,22 +199,43 @@ const ActivityItem = styled.div`
 const Dashboard = () => {
   const { estadisticas, actualizarEstadisticas } = useApp();
 
-  useEffect(() => {
-    actualizarEstadisticas();
+  // Memoizar la función de actualización para evitar re-renders innecesarios
+  const memoizedActualizarEstadisticas = useCallback(() => {
+    return actualizarEstadisticas();
   }, [actualizarEstadisticas]);
 
-  const formatCurrency = (amount) => {
+  // Usar hook de datos memoizados para las estadísticas
+  const { data: estadisticasMemoizadas, loading, refetch } = useMemoizedData(
+    memoizedActualizarEstadisticas,
+    [], // Sin dependencias adicionales
+    {
+      cacheTime: 2 * 60 * 1000, // 2 minutos de caché
+      staleTime: 30 * 1000, // 30 segundos antes de considerar stale
+      refetchOnMount: true
+    }
+  );
+
+  // Usar estadísticas memoizadas o las del contexto
+  const estadisticasFinales = estadisticasMemoizadas || estadisticas;
+
+  // Memoizar funciones de formateo para evitar recreación en cada render
+  const formatCurrency = useCallback((amount) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
     }).format(amount);
-  };
+  }, []);
 
-  const formatDateTime = (date) => {
+  const formatDateTime = useCallback((date) => {
     return new Date(date).toLocaleString('es-AR');
-  };
+  }, []);
 
-  if (!estadisticas) {
+  // Memoizar la fecha formateada
+  const fechaFormateada = useMemo(() => {
+    return formatDate(new Date());
+  }, []);
+
+  if (loading || !estadisticasFinales) {
     return (
       <DashboardContainer>
         <Header>
@@ -229,7 +251,7 @@ const Dashboard = () => {
       <Header>
         <h1>Dashboard</h1>
         <div className="subtitle">
-          Resumen del día - {formatDate(new Date())}
+          Resumen del día - {fechaFormateada}
         </div>
       </Header>
 
@@ -239,11 +261,11 @@ const Dashboard = () => {
             <div className="stat-title">Ventas Hoy</div>
             <div className="stat-icon">💰</div>
           </div>
-          <div className="stat-value">{formatCurrency(estadisticas.ventasHoy.monto)}</div>
+          <div className="stat-value">{formatCurrency(estadisticasFinales.ventasHoy.monto)}</div>
           <div className="stat-subtitle">
-            {estadisticas.ventasHoy.cantidad} ventas • 
-            Efectivo: {formatCurrency(estadisticas.ventasHoy.efectivo)} • 
-            Transferencia: {formatCurrency(estadisticas.ventasHoy.transferencia)}
+            {estadisticasFinales.ventasHoy.cantidad} ventas • 
+            Efectivo: {formatCurrency(estadisticasFinales.ventasHoy.efectivo)} • 
+            Transferencia: {formatCurrency(estadisticasFinales.ventasHoy.transferencia)}
           </div>
         </StatCard>
 
@@ -252,9 +274,9 @@ const Dashboard = () => {
             <div className="stat-title">Gastos Hoy</div>
             <div className="stat-icon">💸</div>
           </div>
-          <div className="stat-value">{formatCurrency(estadisticas.gastosHoy.monto)}</div>
+          <div className="stat-value">{formatCurrency(estadisticasFinales.gastosHoy.monto)}</div>
           <div className="stat-subtitle">
-            {estadisticas.gastosHoy.cantidad} movimientos
+            {estadisticasFinales.gastosHoy.cantidad} movimientos
           </div>
         </StatCard>
 
@@ -263,21 +285,21 @@ const Dashboard = () => {
             <div className="stat-title">Saldo Caja</div>
             <div className="stat-icon">🏦</div>
           </div>
-          <div className="stat-value">{formatCurrency(estadisticas.saldoCaja.total)}</div>
+          <div className="stat-value">{formatCurrency(estadisticasFinales.saldoCaja.total)}</div>
           <div className="stat-subtitle">
-            Efectivo: {formatCurrency(estadisticas.saldoCaja.efectivo)} • 
-            Transferencia: {formatCurrency(estadisticas.saldoCaja.transferencia)}
+            Efectivo: {formatCurrency(estadisticasFinales.saldoCaja.efectivo)} • 
+            Transferencia: {formatCurrency(estadisticasFinales.saldoCaja.transferencia)}
           </div>
         </StatCard>
 
-        <StatCard className={estadisticas.stockBajo > 0 ? 'danger' : 'success'}>
+        <StatCard className={estadisticasFinales.stockBajo > 0 ? 'danger' : 'success'}>
           <div className="stat-header">
             <div className="stat-title">Stock Bajo</div>
             <div className="stat-icon">⚠️</div>
           </div>
-          <div className="stat-value">{estadisticas.stockBajo}</div>
+          <div className="stat-value">{estadisticasFinales.stockBajo}</div>
           <div className="stat-subtitle">
-            {estadisticas.stockBajo > 0 ? 'Insumos con stock bajo' : 'Todo en orden'}
+            {estadisticasFinales.stockBajo > 0 ? 'Insumos con stock bajo' : 'Todo en orden'}
           </div>
         </StatCard>
 
@@ -286,10 +308,10 @@ const Dashboard = () => {
             <div className="stat-title">Ventas Semana</div>
             <div className="stat-icon">📊</div>
           </div>
-          <div className="stat-value">{formatCurrency(estadisticas.ventasSemana.monto)}</div>
+          <div className="stat-value">{formatCurrency(estadisticasFinales.ventasSemana.monto)}</div>
           <div className="stat-subtitle">
-            {estadisticas.ventasSemana.cantidad} ventas • 
-            Promedio diario: {formatCurrency(estadisticas.ventasSemana.promedioDiario)}
+            {estadisticasFinales.ventasSemana.cantidad} ventas • 
+            Promedio diario: {formatCurrency(estadisticasFinales.ventasSemana.promedioDiario)}
           </div>
         </StatCard>
 
@@ -298,7 +320,7 @@ const Dashboard = () => {
             <div className="stat-title">Recetas Activas</div>
             <div className="stat-icon">🍽️</div>
           </div>
-          <div className="stat-value">{estadisticas.recetasActivas}</div>
+          <div className="stat-value">{estadisticasFinales.recetasActivas}</div>
           <div className="stat-subtitle">
             Recetas disponibles para producción
           </div>
