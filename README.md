@@ -204,5 +204,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 **Desarrollado con ❤️ para CROSTY - Alimentos Congelados al Vacío**
 
+*Última actualización: $(date)*
+
 [![GitHub stars](https://img.shields.io/github/stars/MazaSebastian/SoftwareCrosty?style=social)](https://github.com/MazaSebastian/SoftwareCrosty/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/MazaSebastian/SoftwareCrosty?style=social)](https://github.com/MazaSebastian/SoftwareCrosty/network)
