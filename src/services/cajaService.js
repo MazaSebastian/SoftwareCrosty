@@ -119,12 +119,35 @@ export async function obtenerSaldosUsuarios() {
 }
 
 export async function eliminarMovimientoCaja(id) {
-  const index = movimientosCaja.findIndex(m => m.id === id);
-  if (index !== -1) {
-    movimientosCaja.splice(index, 1);
+  try {
+    console.log('🔧 Intentando eliminar movimiento con ID:', id);
+    
+    // Intentar eliminar desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.MOVIMIENTOS_CAJA)
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Movimiento eliminado de Supabase:', data);
     return true;
+  } catch (error) {
+    console.error('❌ Error eliminando de Supabase, intentando localmente:', error);
+    
+    // En caso de error, intentar eliminar localmente
+    const index = movimientosCaja.findIndex(m => m.id === id);
+    if (index !== -1) {
+      movimientosCaja.splice(index, 1);
+      return true;
+    }
+    return false;
   }
-  return false;
 }
 
 // Obtener saldo general de CROSTY (suma de todos los usuarios)

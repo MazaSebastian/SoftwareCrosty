@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import OptimizedInput from '../components/OptimizedInput';
 import OptimizedSelect from '../components/OptimizedSelect';
+import ImportacionCSV from '../components/ImportacionCSV';
 import { 
   obtenerMovimientosCaja, 
   crearMovimientoCaja, 
@@ -308,6 +309,7 @@ const CajaDiaria = () => {
   const [resumenCompleto, setResumenCompleto] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
+  const [mostrarImportacion, setMostrarImportacion] = useState(false);
   const [formData, setFormData] = useState({
     tipo: 'ingreso',
     concepto: '',
@@ -334,6 +336,11 @@ const CajaDiaria = () => {
     } catch (error) {
       console.error('Error al cargar datos:', error);
     }
+  };
+
+  const handleImportacionCompleta = () => {
+    cargarDatos(); // Recargar datos después de importación
+    setMostrarImportacion(false); // Ocultar panel de importación
   };
 
   const handleUsuarioChange = (usuario) => {
@@ -414,12 +421,24 @@ const CajaDiaria = () => {
           <h1>Caja Diaria</h1>
           <div className="subtitle">Control de ingresos y egresos diarios</div>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          ➕ Nuevo Movimiento
-        </Button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button onClick={() => setIsModalOpen(true)}>
+            ➕ Nuevo Movimiento
+          </Button>
+          <Button 
+            onClick={() => setMostrarImportacion(!mostrarImportacion)}
+            style={{ background: '#10B981' }}
+          >
+            📊 {mostrarImportacion ? 'Ocultar Importación' : 'Importar CSV'}
+          </Button>
+        </div>
       </Header>
 
       <UsuarioSelector onUsuarioChange={handleUsuarioChange} />
+
+      {mostrarImportacion && (
+        <ImportacionCSV onImportacionCompleta={handleImportacionCompleta} />
+      )}
 
       <StatsGrid>
         <StatCard className="success">
