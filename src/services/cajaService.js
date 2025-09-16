@@ -80,11 +80,25 @@ export async function obtenerSaldosUsuarios() {
   const movimientos = await obtenerMovimientosCaja();
   const usuarios = new Map();
 
+  console.log('🔧 obtenerSaldosUsuarios - Total movimientos:', movimientos.length);
+  console.log('🔧 Primer movimiento de ejemplo:', movimientos[0]);
+
   movimientos.forEach(movimiento => {
-    if (!usuarios.has(movimiento.usuarioId)) {
-      usuarios.set(movimiento.usuarioId, {
-        usuarioId: movimiento.usuarioId,
-        usuarioNombre: movimiento.usuarioNombre,
+    // Usar los campos correctos de Supabase (usuario_id, usuario_nombre)
+    const usuarioId = movimiento.usuario_id || movimiento.usuarioId;
+    const usuarioNombre = movimiento.usuario_nombre || movimiento.usuarioNombre;
+    
+    console.log('🔧 Procesando movimiento:', {
+      usuarioId,
+      usuarioNombre,
+      tipo: movimiento.tipo,
+      monto: movimiento.monto
+    });
+    
+    if (!usuarios.has(usuarioId)) {
+      usuarios.set(usuarioId, {
+        usuarioId: usuarioId,
+        usuarioNombre: usuarioNombre,
         saldoEfectivo: 0,
         saldoTransferencia: 0,
         saldoTotal: 0,
@@ -92,7 +106,7 @@ export async function obtenerSaldosUsuarios() {
       });
     }
 
-    const saldo = usuarios.get(movimiento.usuarioId);
+    const saldo = usuarios.get(usuarioId);
     
     if (movimiento.tipo === 'ingreso') {
       if (movimiento.metodo === 'efectivo') {
