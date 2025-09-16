@@ -7,8 +7,21 @@ import {
   generarReporteRecetas,
   generarReporteGeneral,
   exportarReporte,
-  obtenerDatosGraficos
+  obtenerDatosGraficos,
+  obtenerDatosVentasLinea,
+  obtenerDatosVentasBarras,
+  obtenerDatosCajaCircular,
+  obtenerDatosInsumosBarras,
+  obtenerMetricasDashboard
 } from '../services/reportesService';
+import { 
+  LineChart, 
+  BarChart, 
+  DoughnutChart, 
+  MetricCard, 
+  MetricsGrid, 
+  ChartsGrid 
+} from '../components/Charts';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -274,10 +287,41 @@ const Reportes = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [datosGraficos, setDatosGraficos] = useState({
+    ventasLinea: null,
+    ventasBarras: null,
+    cajaCircular: null,
+    insumosBarras: null,
+    metricas: null
+  });
+  const [mostrarGraficos, setMostrarGraficos] = useState(true);
 
   useEffect(() => {
     generarReporte();
+    cargarDatosGraficos();
   }, [tipoReporte, filtros]);
+
+  const cargarDatosGraficos = async () => {
+    try {
+      const [ventasLinea, ventasBarras, cajaCircular, insumosBarras, metricas] = await Promise.all([
+        obtenerDatosVentasLinea(filtros),
+        obtenerDatosVentasBarras(filtros),
+        obtenerDatosCajaCircular(filtros),
+        obtenerDatosInsumosBarras(),
+        obtenerMetricasDashboard()
+      ]);
+
+      setDatosGraficos({
+        ventasLinea,
+        ventasBarras,
+        cajaCircular,
+        insumosBarras,
+        metricas
+      });
+    } catch (error) {
+      console.error('Error cargando datos de gráficos:', error);
+    }
+  };
 
   const generarReporte = async () => {
     setLoading(true);
@@ -500,6 +544,76 @@ const Reportes = () => {
     );
   };
 
+  const renderMetricasDashboard = () => {
+    if (!datosGraficos.metricas) return null;
+    
+    const { metricas } = datosGraficos;
+    
+    return (
+      <MetricsGrid>
+        <MetricCard color={metricas.ventasHoy.color}>
+          <div className="metric-value">{formatCurrency(metricas.ventasHoy.valor)}</div>
+          <div className="metric-label">Ventas Hoy</div>
+          <div className="metric-change">{metricas.ventasHoy.cambio}</div>
+        </MetricCard>
+
+        <MetricCard color={metricas.gastosHoy.color}>
+          <div className="metric-value">{formatCurrency(metricas.gastosHoy.valor)}</div>
+          <div className="metric-label">Gastos Hoy</div>
+          <div className="metric-change">{metricas.gastosHoy.cambio}</div>
+        </MetricCard>
+
+        <MetricCard color={metricas.stockBajo.color}>
+          <div className="metric-value">{metricas.stockBajo.valor}</div>
+          <div className="metric-label">Stock Bajo</div>
+          <div className="metric-change">{metricas.stockBajo.cambio}</div>
+        </MetricCard>
+
+        <MetricCard color={metricas.recetasActivas.color}>
+          <div className="metric-value">{metricas.recetasActivas.valor}</div>
+          <div className="metric-label">Recetas Activas</div>
+          <div className="metric-change">{metricas.recetasActivas.cambio}</div>
+        </MetricCard>
+      </MetricsGrid>
+    );
+  };
+
+  const renderGraficos = () => {
+    if (!mostrarGraficos) return null;
+
+    return (
+      <ChartsGrid>
+        {datosGraficos.ventasLinea && (
+          <LineChart 
+            title="📈 Tendencia de Ventas Diarias"
+            data={datosGraficos.ventasLinea}
+          />
+        )}
+
+        {datosGraficos.ventasBarras && (
+          <BarChart 
+            title="📊 Ventas por Producto"
+            data={datosGraficos.ventasBarras}
+          />
+        )}
+
+        {datosGraficos.cajaCircular && (
+          <DoughnutChart 
+            title="💰 Ingresos vs Gastos"
+            data={datosGraficos.cajaCircular}
+          />
+        )}
+
+        {datosGraficos.insumosBarras && (
+          <BarChart 
+            title="🥬 Valor de Stock por Categoría"
+            data={datosGraficos.insumosBarras}
+          />
+        )}
+      </ChartsGrid>
+    );
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -555,10 +669,25 @@ const Reportes = () => {
           <span>🔄</span>
           Actualizar
         </Button>
+
+        <Button 
+          className={mostrarGraficos ? 'success' : 'secondary'}
+          onClick={() => setMostrarGraficos(!mostrarGraficos)}
+        >
+          <span>{mostrarGraficos ? '📊' : '📈'}</span>
+          {mostrarGraficos ? 'Ocultar Gráficos' : 'Mostrar Gráficos'}
+        </Button>
       </Controls>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
+      {/* Métricas del Dashboard */}
+      {renderMetricasDashboard()}
+
+      {/* Gráficos Interactivos */}
+      {renderGraficos()}
+
+      {/* Resúmenes por tipo de reporte */}
       {tipoReporte === 'general' && renderResumenGeneral()}
       {tipoReporte === 'ventas' && renderResumenVentas()}
       {tipoReporte === 'caja' && renderResumenCaja()}

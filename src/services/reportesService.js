@@ -271,5 +271,155 @@ export async function obtenerDatosGraficos(tipo, filtros) {
   }
 }
 
+// Función para obtener datos de ventas para gráfico de líneas
+export async function obtenerDatosVentasLinea(filtros) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const ventas = await obtenerVentas(filtros);
+  const ventasPorDia = agruparVentasPorDia(ventas);
+  
+  const fechas = Object.keys(ventasPorDia).sort();
+  const montos = fechas.map(fecha => ventasPorDia[fecha].monto);
+  
+  return {
+    labels: fechas,
+    datasets: [{
+      label: 'Ventas Diarias',
+      data: montos,
+      borderColor: '#722F37',
+      backgroundColor: 'rgba(114, 47, 55, 0.1)',
+      tension: 0.4,
+      fill: true
+    }]
+  };
+}
+
+// Función para obtener datos de ventas por producto para gráfico de barras
+export async function obtenerDatosVentasBarras(filtros) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const ventas = await obtenerVentas(filtros);
+  const ventasPorProducto = agruparVentasPorProducto(ventas);
+  
+  const productos = Object.keys(ventasPorProducto);
+  const montos = productos.map(producto => ventasPorProducto[producto].monto);
+  
+  return {
+    labels: productos,
+    datasets: [{
+      label: 'Ventas por Producto',
+      data: montos,
+      backgroundColor: [
+        '#722F37',
+        '#8B3A42',
+        '#10B981',
+        '#F59E0B',
+        '#EF4444',
+        '#3B82F6'
+      ],
+      borderColor: '#FFFFFF',
+      borderWidth: 2
+    }]
+  };
+}
+
+// Función para obtener datos de caja para gráfico circular
+export async function obtenerDatosCajaCircular(filtros) {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const movimientos = await obtenerMovimientosCaja(filtros);
+  const ingresos = movimientos.filter(m => m.tipo === 'ingreso');
+  const gastos = movimientos.filter(m => m.tipo === 'gasto');
+  
+  const totalIngresos = ingresos.reduce((sum, m) => sum + m.monto, 0);
+  const totalGastos = gastos.reduce((sum, m) => sum + m.monto, 0);
+  
+  return {
+    labels: ['Ingresos', 'Gastos'],
+    datasets: [{
+      data: [totalIngresos, totalGastos],
+      backgroundColor: ['#10B981', '#EF4444'],
+      borderColor: '#FFFFFF',
+      borderWidth: 2
+    }]
+  };
+}
+
+// Función para obtener datos de insumos para gráfico de barras
+export async function obtenerDatosInsumosBarras() {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const insumos = await obtenerInsumos();
+  const insumosPorCategoria = agruparInsumosPorCategoria(insumos);
+  
+  const categorias = Object.keys(insumosPorCategoria);
+  const valores = categorias.map(categoria => insumosPorCategoria[categoria].valor);
+  
+  return {
+    labels: categorias,
+    datasets: [{
+      label: 'Valor de Stock por Categoría',
+      data: valores,
+      backgroundColor: [
+        '#722F37',
+        '#8B3A42',
+        '#10B981',
+        '#F59E0B',
+        '#EF4444',
+        '#3B82F6'
+      ],
+      borderColor: '#FFFFFF',
+      borderWidth: 2
+    }]
+  };
+}
+
+// Función para obtener métricas del dashboard
+export async function obtenerMetricasDashboard() {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const [ventas, movimientos, insumos, recetas] = await Promise.all([
+    obtenerVentas({}),
+    obtenerMovimientosCaja({}),
+    obtenerInsumos(),
+    obtenerRecetas()
+  ]);
+  
+  const ventasHoy = ventas.filter(v => {
+    const hoy = new Date().toDateString();
+    return new Date(v.fecha).toDateString() === hoy;
+  });
+  
+  const ingresosHoy = ventasHoy.reduce((sum, v) => sum + v.subtotal, 0);
+  const gastosHoy = movimientos
+    .filter(m => m.tipo === 'gasto' && new Date(m.fecha).toDateString() === new Date().toDateString())
+    .reduce((sum, m) => sum + m.monto, 0);
+  
+  const insumosStockBajo = insumos.filter(i => i.stockActual < i.stockMinimo).length;
+  
+  return {
+    ventasHoy: {
+      valor: ingresosHoy,
+      cambio: '+12%',
+      color: '#10B981'
+    },
+    gastosHoy: {
+      valor: gastosHoy,
+      cambio: '+5%',
+      color: '#EF4444'
+    },
+    stockBajo: {
+      valor: insumosStockBajo,
+      cambio: insumosStockBajo > 0 ? '⚠️' : '✅',
+      color: insumosStockBajo > 0 ? '#F59E0B' : '#10B981'
+    },
+    recetasActivas: {
+      valor: recetas.filter(r => r.activa).length,
+      cambio: '+2',
+      color: '#3B82F6'
+    }
+  };
+}
+
 
 
