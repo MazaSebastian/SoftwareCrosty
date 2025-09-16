@@ -214,12 +214,18 @@ const Login = () => {
     try {
       setSuccess(`¡Bienvenido, ${usuario.nombre} ${usuario.apellido}!`);
       
+      // Limpiar localStorage completamente
+      localStorage.clear();
+      
       // Establecer usuario actual
       setUsuario(usuario);
       
-      // Guardar en localStorage
+      // Guardar en localStorage con datos frescos
       localStorage.setItem('crosty_usuario_actual', JSON.stringify(usuario));
       localStorage.setItem('crosty_logged_in', 'true');
+
+      console.log('🔧 Usuario establecido:', usuario);
+      console.log('🔧 ID del usuario:', usuario.id);
 
       // Redirigir después de 1 segundo
       setTimeout(() => {

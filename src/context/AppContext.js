@@ -15,10 +15,18 @@ export const AppProvider = ({ children }) => {
       try {
         const usuarioGuardado = cargarUsuarioActual();
         if (usuarioGuardado) {
-          setUsuario(usuarioGuardado);
+          // Verificar si el usuario tiene UUID válido
+          if (usuarioGuardado.id && usuarioGuardado.id.length > 10) {
+            setUsuario(usuarioGuardado);
+            console.log('✅ Usuario cargado con UUID válido:', usuarioGuardado.id);
+          } else {
+            console.log('❌ Usuario con ID inválido, limpiando localStorage');
+            localStorage.clear();
+          }
         }
       } catch (error) {
         console.error('Error al cargar usuario:', error);
+        localStorage.clear();
       }
     };
 
