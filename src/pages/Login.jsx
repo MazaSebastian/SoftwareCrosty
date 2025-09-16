@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { supabase } from '../config/supabase';
 import { useApp } from '../context/AppContext';
-import { obtenerUsuarios, establecerUsuarioActual } from '../services/usuariosService';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -202,88 +201,19 @@ const UserItem = styled.div`
 
 const Login = () => {
   const { setUsuario } = useApp();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [usuarios, setUsuarios] = useState([]);
-  const [showUserList, setShowUserList] = useState(false);
 
-  useEffect(() => {
-    cargarUsuarios();
-  }, []);
 
-  const cargarUsuarios = async () => {
-    try {
-      // Primero intentar cargar desde Supabase
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('activo', true)
-        .order('nombre');
-
-      if (error || !data || data.length === 0) {
-        // Si no hay usuarios en Supabase, usar usuarios mock
-        console.log('Usando usuarios mock locales');
-        const usuariosMock = obtenerUsuarios();
-        setUsuarios(usuariosMock);
-      } else {
-        setUsuarios(data);
-      }
-    } catch (error) {
-      console.error('Error cargando usuarios, usando mock:', error);
-      // En caso de error, usar usuarios mock
-      const usuariosMock = obtenerUsuarios();
-      setUsuarios(usuariosMock);
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleDirectLogin = async (usuario) => {
     setIsLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      // Primero buscar en usuarios mock locales
-      const usuariosMock = obtenerUsuarios();
-      const usuarioMock = usuariosMock.find(u => u.email === email && u.activo);
-      
-      if (usuarioMock) {
-        // Usuario encontrado en mock, establecer como usuario actual
-        establecerUsuarioActual(usuarioMock);
-        setUsuario(usuarioMock);
-        setSuccess('¡Inicio de sesión exitoso!');
-        
-        // Redirigir al dashboard después de un breve delay
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
-        return;
-      }
-
-      // Si no se encuentra en mock, intentar con Supabase
-      const { data: usuario, error: userError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('email', email)
-        .eq('activo', true)
-        .single();
-
-      if (userError || !usuario) {
-        throw new Error('Usuario no encontrado o inactivo');
-      }
-
-      // Simular login exitoso (en un sistema real usarías autenticación de Supabase)
       setSuccess(`¡Bienvenido, ${usuario.nombre} ${usuario.apellido}!`);
       
-      // Actualizar último acceso
-      await supabase
-        .from('usuarios')
-        .update({ ultimo_acceso: new Date().toISOString() })
-        .eq('id', usuario.id);
-
       // Establecer usuario actual
       setUsuario(usuario);
       
@@ -297,39 +227,12 @@ const Login = () => {
       }, 1000);
 
     } catch (error) {
-      setError(error.message);
+      setError('Error al iniciar sesión');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleQuickLogin = async (usuario) => {
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      setSuccess(`¡Bienvenido, ${usuario.nombre} ${usuario.apellido}!`);
-      
-      // Establecer usuario actual en el servicio local
-      establecerUsuarioActual(usuario);
-      setUsuario(usuario);
-      
-      // Guardar en localStorage
-      localStorage.setItem('crosty_usuario_actual', JSON.stringify(usuario));
-      localStorage.setItem('crosty_logged_in', 'true');
-
-      // Redirigir después de 1 segundo
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
-
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const getInitials = (nombre, apellido) => {
     return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
@@ -355,90 +258,89 @@ const Login = () => {
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}
 
-        <Form onSubmit={handleLogin}>
-          <InputGroup>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required
-            />
-          </InputGroup>
-
-          <InputGroup>
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </InputGroup>
-
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </Button>
-        </Form>
-
-        <UserList>
+        <div style={{ marginTop: '2rem' }}>
+          <h3 style={{ 
+            color: '#374151', 
+            fontSize: '1.2rem', 
+            marginBottom: '1.5rem',
+            textAlign: 'center'
+          }}>
+            Selecciona tu usuario
+          </h3>
+          
           <div style={{ 
             display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '1rem'
+            flexDirection: 'column', 
+            gap: '1rem' 
           }}>
-            <h3 style={{ color: '#374151', fontSize: '1rem', margin: 0 }}>
-              Usuarios Disponibles
-            </h3>
-            <button
-              onClick={() => setShowUserList(!showUserList)}
+            <Button
+              onClick={() => handleDirectLogin({
+                id: 1,
+                nombre: 'Sebastián',
+                apellido: 'Maza',
+                email: 'sebastian@crosty.com',
+                rol: 'admin',
+                activo: true
+              })}
+              disabled={isLoading}
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#722F37',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                padding: '1.25rem 2rem',
+                fontSize: '1.1rem',
                 fontWeight: '600'
               }}
             >
-              {showUserList ? 'Ocultar' : 'Mostrar'}
-            </button>
-          </div>
+              <span style={{ fontSize: '1.5rem' }}>👑</span>
+              <div style={{ textAlign: 'left' }}>
+                <div>Sebastián Maza</div>
+                <div style={{ 
+                  fontSize: '0.9rem', 
+                  opacity: 0.8,
+                  fontWeight: '400'
+                }}>
+                  Administrador
+                </div>
+              </div>
+            </Button>
 
-          {showUserList && (
-            <div>
-              {usuarios.map(usuario => (
-                <UserItem 
-                  key={usuario.id} 
-                  onClick={() => handleQuickLogin(usuario)}
-                >
-                  <div className="user-info">
-                    <div className="user-avatar">
-                      {getInitials(usuario.nombre, usuario.apellido)}
-                    </div>
-                    <div className="user-details">
-                      <div className="user-name">
-                        {usuario.nombre} {usuario.apellido}
-                      </div>
-                      <div className="user-role">
-                        {usuario.rol === 'admin' ? '👑 Administrador' : 
-                         usuario.rol === 'usuario' ? '👤 Usuario' : '👋 Invitado'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`user-status ${getStatusColor(usuario.ultimo_acceso)}`}>
-                    {getStatusColor(usuario.ultimo_acceso) === 'online' ? '🟢 En línea' : '⚪ Desconectado'}
-                  </div>
-                </UserItem>
-              ))}
-            </div>
-          )}
-        </UserList>
+            <Button
+              onClick={() => handleDirectLogin({
+                id: 2,
+                nombre: 'Santiago',
+                apellido: 'Maza',
+                email: 'mazasantiago.10@crosty.com',
+                rol: 'usuario',
+                activo: true
+              })}
+              disabled={isLoading}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                padding: '1.25rem 2rem',
+                fontSize: '1.1rem',
+                fontWeight: '600'
+              }}
+            >
+              <span style={{ fontSize: '1.5rem' }}>👤</span>
+              <div style={{ textAlign: 'left' }}>
+                <div>Santiago Maza</div>
+                <div style={{ 
+                  fontSize: '0.9rem', 
+                  opacity: 0.8,
+                  fontWeight: '400'
+                }}>
+                  Usuario
+                </div>
+              </div>
+            </Button>
+          </div>
+        </div>
+
       </LoginCard>
     </LoginContainer>
   );
