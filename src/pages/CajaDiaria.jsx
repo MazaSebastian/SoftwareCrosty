@@ -560,7 +560,7 @@ const CajaDiaria = () => {
                     marginBottom: '0.5rem'
                   }}>
                     <div style={{ 
-                      color: 'white', 
+                      color: '#333333', 
                       fontWeight: '600',
                       fontSize: '1.1rem'
                     }}>
@@ -579,7 +579,7 @@ const CajaDiaria = () => {
                     gridTemplateColumns: '1fr 1fr', 
                     gap: '0.5rem',
                     fontSize: '0.85rem',
-                    color: 'rgba(255, 255, 255, 0.7)'
+                    color: '#666666'
                   }}>
                     <div>Efectivo: {formatCurrency(saldo.saldoEfectivo)}</div>
                     <div>Transferencia: {formatCurrency(saldo.saldoTransferencia)}</div>
