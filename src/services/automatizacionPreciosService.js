@@ -12,6 +12,7 @@ class AutomatizacionPreciosService {
       margenObjetivo: 50, // 50% margen objetivo
       actualizacionAutomatica: true,
       notificarCambios: true,
+      intervaloVerificacion: 6, // 6 horas por defecto
       historialCambios: []
     };
   }
@@ -43,12 +44,13 @@ class AutomatizacionPreciosService {
       clearInterval(this.intervalId);
     }
 
-    // Verificar cambios cada 30 minutos
+    // Verificar cambios según configuración (por defecto cada 6 horas)
+    const intervaloMs = this.configuracion.intervaloVerificacion * 60 * 60 * 1000;
     this.intervalId = setInterval(async () => {
       await this.verificarCambiosPendientes();
-    }, 30 * 60 * 1000);
+    }, intervaloMs);
 
-    console.log('🔄 Monitoreo automático de precios iniciado');
+    console.log(`🔄 Monitoreo automático de precios iniciado (cada ${this.configuracion.intervaloVerificacion} horas)`);
   }
 
   // Detener monitoreo automático

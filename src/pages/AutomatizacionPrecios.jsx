@@ -251,7 +251,8 @@ const AutomatizacionPrecios = () => {
       margenMinimo: 30,
       margenObjetivo: 50,
       actualizacionAutomatica: true,
-      notificarCambios: true
+      notificarCambios: true,
+      intervaloVerificacion: 6
     },
     ultimaVerificacion: null
   });
@@ -468,6 +469,21 @@ const AutomatizacionPrecios = () => {
             </ControlCard>
 
             <ControlCard>
+              <h4>⏰ Frecuencia de Verificación</h4>
+              <Label>Intervalo de verificación (horas):</Label>
+              <Input
+                type="number"
+                value={estado.configuracion.intervaloVerificacion}
+                onChange={(e) => actualizarConfiguracion({ intervaloVerificacion: parseInt(e.target.value) || 6 })}
+                min="1"
+                max="168"
+              />
+              <p style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '5px' }}>
+                Recomendado: 6-12 horas para compras semanales
+              </p>
+            </ControlCard>
+
+            <ControlCard>
               <h4>🔔 Notificaciones</h4>
               <Switch>
                 <input
@@ -576,6 +592,9 @@ const AutomatizacionPrecios = () => {
             </div>
             <div>
               <strong>Notificaciones:</strong> {estado.configuracion.notificarCambios ? '✅' : '❌'}
+            </div>
+            <div>
+              <strong>Intervalo de Verificación:</strong> {estado.configuracion.intervaloVerificacion} horas
             </div>
           </div>
         </Section>
