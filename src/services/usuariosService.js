@@ -56,12 +56,15 @@ export const obtenerUsuarioActual = () => {
 
 // Establecer usuario actual
 export const establecerUsuarioActual = (usuario) => {
+  console.log('🔧 Estableciendo usuario actual:', usuario);
   usuarioActual = usuario;
   // Guardar en localStorage
   if (usuario) {
     localStorage.setItem('crosty_usuario_actual', JSON.stringify(usuario));
+    console.log('✅ Usuario guardado en localStorage');
   } else {
     localStorage.removeItem('crosty_usuario_actual');
+    console.log('🗑️ Usuario eliminado de localStorage');
   }
 };
 
@@ -71,12 +74,14 @@ export const cargarUsuarioActual = () => {
     const usuarioGuardado = localStorage.getItem('crosty_usuario_actual');
     if (usuarioGuardado) {
       usuarioActual = JSON.parse(usuarioGuardado);
+      console.log('🔧 Usuario cargado desde localStorage:', usuarioActual);
       return usuarioActual;
     }
   } catch (error) {
     console.error('Error al cargar usuario actual:', error);
     localStorage.removeItem('crosty_usuario_actual');
   }
+  console.log('❌ No hay usuario en localStorage');
   return null;
 };
 

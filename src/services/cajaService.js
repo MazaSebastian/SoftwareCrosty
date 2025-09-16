@@ -41,6 +41,7 @@ export async function crearMovimientoCaja(movimiento) {
   };
   
   try {
+    console.log('🔧 Usuario actual:', usuarioActual);
     console.log('🔧 Intentando guardar en Supabase:', nuevoMovimiento);
     
     // Intentar guardar en Supabase primero
