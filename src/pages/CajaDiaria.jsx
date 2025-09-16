@@ -555,7 +555,8 @@ const CajaDiaria = () => {
                   marginBottom: '1rem', 
                   background: 'rgba(255, 255, 255, 0.05)', 
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: '2px solid rgba(0, 255, 0, 0.3)', // Debug: borde verde temporal
+                  minHeight: '80px' // Debug: altura mínima
                 }}>
                   <div style={{ 
                     display: 'flex', 
@@ -563,8 +564,18 @@ const CajaDiaria = () => {
                     alignItems: 'center',
                     marginBottom: '0.5rem'
                   }}>
-                    <div style={{ color: 'white', fontWeight: '600' }}>
+                    <div style={{ 
+                      color: 'white', 
+                      fontWeight: '600',
+                      fontSize: '1.1rem',
+                      backgroundColor: 'rgba(255, 0, 0, 0.1)', // Debug: fondo rojo temporal
+                      padding: '0.25rem',
+                      borderRadius: '4px'
+                    }}>
                       {saldo.usuarioNombre || 'Usuario sin nombre'}
+                      <div style={{ fontSize: '0.8rem', color: 'yellow' }}>
+                        DEBUG: {saldo.usuarioId}
+                      </div>
                     </div>
                     <div style={{ 
                       color: saldo.saldoTotal >= 0 ? '#10b981' : '#ef4444',
