@@ -5,7 +5,7 @@
 ### 1. Crear Repositorio en GitHub
 1. Ve a [GitHub.com](https://github.com)
 2. Haz clic en "New repository"
-3. Nombre: `crosty-software`
+3. Nombre: `SoftwareCrosty`
 4. Descripción: `🍽️ CROSTY - Software de Gestión Gastronómica para Alimentos Congelados al Vacío`
 5. Marca como **Público**
 6. **NO** inicialices con README, .gitignore o licencia (ya los tenemos)
@@ -14,7 +14,7 @@
 ### 2. Conectar Repositorio Local
 ```bash
 # Agregar el repositorio remoto
-git remote add origin https://github.com/TU_USUARIO/crosty-software.git
+git remote add origin https://github.com/MazaSebastian/SoftwareCrosty.git
 
 # Subir el código
 git branch -M main
@@ -25,7 +25,7 @@ git push -u origin main
 1. Ve a [Vercel.com](https://vercel.com)
 2. Haz clic en "Import Project"
 3. Conecta tu cuenta de GitHub
-4. Selecciona el repositorio `crosty-software`
+4. Selecciona el repositorio `SoftwareCrosty`
 5. Vercel detectará automáticamente que es un proyecto React
 6. Haz clic en "Deploy"
 
@@ -41,8 +41,8 @@ git push origin main
 
 ### Vercel se actualiza automáticamente
 - Cada push a `main` desplegará automáticamente
-- URL de desarrollo: `https://crosty-software.vercel.app`
-- Preview de PRs: `https://crosty-software-git-[branch].vercel.app`
+- URL de desarrollo: `https://software-crosty.vercel.app`
+- Preview de PRs: `https://software-crosty-git-[branch].vercel.app`
 
 ## 📁 Estructura del Proyecto
 ```
@@ -126,10 +126,10 @@ vercel --prod
 
 ## 📱 URLs del Proyecto
 
-- **GitHub:** `https://github.com/TU_USUARIO/crosty-software`
-- **Vercel:** `https://crosty-software.vercel.app`
-- **Issues:** `https://github.com/TU_USUARIO/crosty-software/issues`
-- **Actions:** `https://github.com/TU_USUARIO/crosty-software/actions`
+- **GitHub:** `https://github.com/MazaSebastian/SoftwareCrosty`
+- **Vercel:** `https://software-crosty.vercel.app`
+- **Issues:** `https://github.com/MazaSebastian/SoftwareCrosty/issues`
+- **Actions:** `https://github.com/MazaSebastian/SoftwareCrosty/actions`
 
 ## 🚀 Próximos Pasos
 

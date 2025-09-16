@@ -2,8 +2,8 @@
 
 **Software de Gestión Gastronómica para Alimentos Congelados al Vacío**
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/TU_USUARIO/crosty-software)
-[![GitHub Actions](https://github.com/TU_USUARIO/crosty-software/workflows/CI/CD/badge.svg)](https://github.com/TU_USUARIO/crosty-software/actions)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/MazaSebastian/SoftwareCrosty)
+[![GitHub Actions](https://github.com/MazaSebastian/SoftwareCrosty/workflows/CI/CD/badge.svg)](https://github.com/MazaSebastian/SoftwareCrosty/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 📋 Descripción
@@ -79,8 +79,8 @@ CROSTY Software es una aplicación de escritorio desarrollada con **Electron + R
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/TU_USUARIO/crosty-software.git
-cd crosty-software
+git clone https://github.com/MazaSebastian/SoftwareCrosty.git
+cd SoftwareCrosty
 
 # Instalar dependencias
 npm install
@@ -178,8 +178,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 ## 📞 Soporte
 
-- **Issues:** [GitHub Issues](https://github.com/TU_USUARIO/crosty-software/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/TU_USUARIO/crosty-software/discussions)
+- **Issues:** [GitHub Issues](https://github.com/MazaSebastian/SoftwareCrosty/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/MazaSebastian/SoftwareCrosty/discussions)
 - **Email:** soporte@crosty.com
 
 ## 🎯 Roadmap
@@ -204,5 +204,5 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 **Desarrollado con ❤️ para CROSTY - Alimentos Congelados al Vacío**
 
-[![GitHub stars](https://img.shields.io/github/stars/TU_USUARIO/crosty-software?style=social)](https://github.com/TU_USUARIO/crosty-software/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/TU_USUARIO/crosty-software?style=social)](https://github.com/TU_USUARIO/crosty-software/network)
+[![GitHub stars](https://img.shields.io/github/stars/MazaSebastian/SoftwareCrosty?style=social)](https://github.com/MazaSebastian/SoftwareCrosty/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/MazaSebastian/SoftwareCrosty?style=social)](https://github.com/MazaSebastian/SoftwareCrosty/network)
