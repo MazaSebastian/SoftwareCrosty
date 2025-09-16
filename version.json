@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "build": "2024.12.15",
+  "name": "CROSTY Gestión Gastronómica",
+  "description": "Software de gestión para alimentos congelados al vacío",
+  "company": "CROSTY",
+  "features": [
+    "Caja Diaria",
+    "Gestión de Insumos",
+    "Cálculo de Recetas",
+    "Control de Ventas",
+    "Reportes",
+    "Control de Stock"
+  ],
+  "requirements": {
+    "os": "macOS 10.12+",
+    "architecture": "arm64, x64",
+    "disk_space": "100MB",
+    "memory": "512MB"
+  },
+  "changelog": {
+    "1.0.0": [
+      "Lanzamiento inicial",
+      "Módulo de Caja Diaria",
+      "Gestión de Insumos",
+      "Cálculo de Recetas",
+      "Control de Ventas",
+      "Sistema de Reportes",
+      "Control de Stock de Productos",
+      "Interfaz elegante con paleta de colores suaves"
+    ]
+  },
+  "support": {
+    "email": "soporte@crosty.com",
+    "website": "https://crosty.com",
+    "documentation": "README-PRODUCCION.md"
+  }
+}

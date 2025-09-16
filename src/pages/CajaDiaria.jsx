@@ -1,0 +1,634 @@
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { obtenerMovimientosCaja, crearMovimientoCaja, obtenerSaldosUsuarios, eliminarMovimientoCaja } from '../services/cajaService';
+import { useApp } from '../context/AppContext';
+
+const PageContainer = styled.div`
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  min-height: 100vh;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #722F37;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .subtitle {
+    color: #6B7280;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+`;
+
+const Button = styled.button`
+  background: #722F37;
+  border: 1px solid #E5E7EB;
+  color: #F5F5DC;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: #F5F5DC;
+    color: #722F37;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(114, 47, 55, 0.3);
+  }
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+`;
+
+const StatCard = styled.div`
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #722F37;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #722F37;
+  }
+  
+  .stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    
+    .stat-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #722F37;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .stat-icon {
+      font-size: 1.5rem;
+      color: #722F37;
+    }
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #722F37;
+  }
+  
+  .stat-subtitle {
+    font-size: 0.85rem;
+    color: #6B7280;
+  }
+  
+  &.success {
+    border-left: 4px solid #722F37;
+  }
+  
+  &.warning {
+    border-left: 4px solid #E5E7EB;
+  }
+  
+  &.danger {
+    border-left: 4px solid #722F37;
+  }
+  
+  &.info {
+    border-left: 4px solid #E5E7EB;
+  }
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Section = styled.div`
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  
+  h3 {
+    color: #722F37;
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+`;
+
+const MovimientosList = styled.div`
+  max-height: 400px;
+  overflow-y: auto;
+  
+  .movimiento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #E5E7EB;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .movimiento-info {
+      flex: 1;
+      
+      .concepto {
+        color: #722F37;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      
+      .detalles {
+        color: #6B7280;
+        font-size: 0.85rem;
+      }
+    }
+    
+    .movimiento-monto {
+      text-align: right;
+      
+      .monto {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .metodo {
+        font-size: 0.75rem;
+        color: #6B7280;
+      }
+    }
+    
+    .movimiento-actions {
+      margin-left: 1rem;
+      
+      button {
+        background: none;
+        border: none;
+        color: #6B7280;
+        cursor: pointer;
+        padding: 0.25rem;
+        
+        &:hover {
+          color: #ef4444;
+        }
+      }
+    }
+  }
+`;
+
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: ${props => props.isOpen ? 'flex' : 'none'};
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  
+  h2 {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+`;
+
+const Form = styled.form`
+  display: grid;
+  gap: 1rem;
+`;
+
+const FormGroup = styled.div`
+  display: grid;
+  gap: 0.5rem;
+  
+  label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+  }
+  
+  input, select, textarea {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+`;
+
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+`;
+
+const CajaDiaria = () => {
+  const { actualizarEstadisticas } = useApp();
+  const [movimientos, setMovimientos] = useState([]);
+  const [saldos, setSaldos] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    tipo: 'ingreso',
+    concepto: '',
+    monto: '',
+    metodo: 'efectivo',
+    descripcion: '',
+    categoria: '',
+    usuarioId: 'socio1',
+    usuarioNombre: 'Socio 1'
+  });
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    try {
+      const [movimientosData, saldosData] = await Promise.all([
+        obtenerMovimientosCaja(),
+        obtenerSaldosUsuarios()
+      ]);
+      setMovimientos(movimientosData);
+      setSaldos(saldosData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.concepto || !formData.monto) return;
+
+    try {
+      const nuevoMovimiento = await crearMovimientoCaja({
+        ...formData,
+        monto: parseFloat(formData.monto)
+      });
+      
+      setMovimientos(prev => [nuevoMovimiento, ...prev]);
+      await cargarDatos();
+      await actualizarEstadisticas();
+      setIsModalOpen(false);
+      setFormData({
+        tipo: 'ingreso',
+        concepto: '',
+        monto: '',
+        metodo: 'efectivo',
+        descripcion: '',
+        categoria: '',
+        usuarioId: 'socio1',
+        usuarioNombre: 'Socio 1'
+      });
+    } catch (error) {
+      console.error('Error al crear movimiento:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este movimiento?')) {
+      try {
+        await eliminarMovimientoCaja(id);
+        await cargarDatos();
+        await actualizarEstadisticas();
+      } catch (error) {
+        console.error('Error al eliminar movimiento:', error);
+      }
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(amount);
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Calcular totales
+  const totalIngresos = movimientos
+    .filter(m => m.tipo === 'ingreso')
+    .reduce((sum, m) => sum + m.monto, 0);
+  
+  const totalEgresos = movimientos
+    .filter(m => m.tipo === 'egreso')
+    .reduce((sum, m) => sum + m.monto, 0);
+
+  const saldoTotal = totalIngresos - totalEgresos;
+
+  return (
+    <PageContainer>
+      <Header>
+        <div>
+          <h1>Caja Diaria</h1>
+          <div className="subtitle">Control de ingresos y egresos diarios</div>
+        </div>
+        <Button onClick={() => setIsModalOpen(true)}>
+          ➕ Nuevo Movimiento
+        </Button>
+      </Header>
+
+      <StatsGrid>
+        <StatCard className="success">
+          <div className="stat-header">
+            <div className="stat-title">Total Ingresos</div>
+            <div className="stat-icon">💰</div>
+          </div>
+          <div className="stat-value">{formatCurrency(totalIngresos)}</div>
+          <div className="stat-subtitle">
+            {movimientos.filter(m => m.tipo === 'ingreso').length} movimientos
+          </div>
+        </StatCard>
+
+        <StatCard className="warning">
+          <div className="stat-header">
+            <div className="stat-title">Total Egresos</div>
+            <div className="stat-icon">💸</div>
+          </div>
+          <div className="stat-value">{formatCurrency(totalEgresos)}</div>
+          <div className="stat-subtitle">
+            {movimientos.filter(m => m.tipo === 'egreso').length} movimientos
+          </div>
+        </StatCard>
+
+        <StatCard className={saldoTotal >= 0 ? 'success' : 'danger'}>
+          <div className="stat-header">
+            <div className="stat-title">Saldo Total</div>
+            <div className="stat-icon">🏦</div>
+          </div>
+          <div className="stat-value">{formatCurrency(saldoTotal)}</div>
+          <div className="stat-subtitle">
+            {saldoTotal >= 0 ? 'Positivo' : 'Negativo'}
+          </div>
+        </StatCard>
+
+        <StatCard className="info">
+          <div className="stat-header">
+            <div className="stat-title">Movimientos Hoy</div>
+            <div className="stat-icon">📊</div>
+          </div>
+          <div className="stat-value">{movimientos.length}</div>
+          <div className="stat-subtitle">
+            Total de transacciones
+          </div>
+        </StatCard>
+      </StatsGrid>
+
+      <ContentGrid>
+        <Section>
+          <h3>📋 Movimientos Recientes</h3>
+          <MovimientosList>
+            {movimientos.length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', padding: '2rem' }}>
+                No hay movimientos registrados
+              </div>
+            ) : (
+              movimientos.map(movimiento => (
+                <div key={movimiento.id} className="movimiento-item">
+                  <div className="movimiento-info">
+                    <div className="concepto">{movimiento.concepto}</div>
+                    <div className="detalles">
+                      {formatDate(movimiento.fecha)} • {movimiento.usuarioNombre}
+                      {movimiento.descripcion && ` • ${movimiento.descripcion}`}
+                    </div>
+                  </div>
+                  <div className="movimiento-monto">
+                    <div className={`monto ${movimiento.tipo === 'ingreso' ? 'text-green-500' : 'text-red-500'}`}>
+                      {movimiento.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(movimiento.monto)}
+                    </div>
+                    <div className="metodo">{movimiento.metodo}</div>
+                  </div>
+                  <div className="movimiento-actions">
+                    <button onClick={() => handleDelete(movimiento.id)} title="Eliminar">
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </MovimientosList>
+        </Section>
+
+        <Section>
+          <h3>👥 Saldos por Usuario</h3>
+          <div>
+            {saldos.length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', padding: '2rem' }}>
+                No hay saldos registrados
+              </div>
+            ) : (
+              saldos.map(saldo => (
+                <div key={saldo.usuarioId} style={{ 
+                  padding: '1rem', 
+                  marginBottom: '1rem', 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div style={{ color: 'white', fontWeight: '600' }}>
+                      {saldo.usuarioNombre}
+                    </div>
+                    <div style={{ 
+                      color: saldo.saldoTotal >= 0 ? '#10b981' : '#ef4444',
+                      fontWeight: '700',
+                      fontSize: '1.1rem'
+                    }}>
+                      {formatCurrency(saldo.saldoTotal)}
+                    </div>
+                  </div>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: '1fr 1fr', 
+                    gap: '0.5rem',
+                    fontSize: '0.85rem',
+                    color: 'rgba(255, 255, 255, 0.7)'
+                  }}>
+                    <div>Efectivo: {formatCurrency(saldo.saldoEfectivo)}</div>
+                    <div>Transferencia: {formatCurrency(saldo.saldoTransferencia)}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Section>
+      </ContentGrid>
+
+      <Modal isOpen={isModalOpen}>
+        <ModalContent>
+          <h2>Nuevo Movimiento</h2>
+          <Form onSubmit={handleSubmit}>
+            <FormRow>
+              <FormGroup>
+                <label>Tipo de Movimiento</label>
+                <select
+                  value={formData.tipo}
+                  onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+                  required
+                >
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                </select>
+              </FormGroup>
+              <FormGroup>
+                <label>Método de Pago</label>
+                <select
+                  value={formData.metodo}
+                  onChange={(e) => setFormData({ ...formData, metodo: e.target.value })}
+                  required
+                >
+                  <option value="efectivo">Efectivo</option>
+                  <option value="transferencia">Transferencia</option>
+                </select>
+              </FormGroup>
+            </FormRow>
+
+            <FormGroup>
+              <label>Concepto *</label>
+              <input
+                type="text"
+                value={formData.concepto}
+                onChange={(e) => setFormData({ ...formData, concepto: e.target.value })}
+                placeholder="Ej: Venta de tartas, Compra de insumos"
+                required
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <label>Monto *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.monto}
+                onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                placeholder="0.00"
+                required
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <label>Categoría</label>
+              <select
+                value={formData.categoria}
+                onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+              >
+                <option value="">Seleccionar categoría</option>
+                <option value="ventas">Ventas</option>
+                <option value="insumos">Insumos</option>
+                <option value="servicios">Servicios</option>
+                <option value="alquiler">Alquiler</option>
+                <option value="otros">Otros</option>
+              </select>
+            </FormGroup>
+
+            <FormGroup>
+              <label>Descripción</label>
+              <textarea
+                value={formData.descripcion}
+                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                placeholder="Detalles adicionales del movimiento..."
+              />
+            </FormGroup>
+
+            <ModalActions>
+              <Button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                style={{ background: '#6b7280' }}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">
+                Guardar Movimiento
+              </Button>
+            </ModalActions>
+          </Form>
+        </ModalContent>
+      </Modal>
+    </PageContainer>
+  );
+};
+
+export default CajaDiaria;
