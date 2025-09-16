@@ -334,8 +334,6 @@ const CajaDiaria = () => {
       setSaldoGeneral(resumenData.saldoGeneral);
       setResumenCompleto(resumenData);
       
-      console.log('🔧 Saldos cargados:', resumenData.saldosUsuarios);
-      console.log('🔧 Primer saldo:', resumenData.saldosUsuarios[0]);
     } catch (error) {
       console.error('Error al cargar datos:', error);
     }
@@ -547,16 +545,13 @@ const CajaDiaria = () => {
                 No hay saldos registrados
               </div>
             ) : (
-              saldos.map(saldo => {
-                console.log('🔧 Renderizando saldo:', saldo);
-                return (
+              saldos.map(saldo => (
                 <div key={saldo.usuarioId} style={{ 
                   padding: '1rem', 
                   marginBottom: '1rem', 
                   background: 'rgba(255, 255, 255, 0.05)', 
                   borderRadius: '8px',
-                  border: '2px solid rgba(0, 255, 0, 0.3)', // Debug: borde verde temporal
-                  minHeight: '80px' // Debug: altura mínima
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
                   <div style={{ 
                     display: 'flex', 
@@ -565,20 +560,11 @@ const CajaDiaria = () => {
                     marginBottom: '0.5rem'
                   }}>
                     <div style={{ 
-                      color: '#FF0000', // Rojo brillante para debug
-                      fontWeight: 'bold',
-                      fontSize: '1.2rem',
-                      backgroundColor: '#FFFF00', // Amarillo brillante
-                      padding: '0.5rem',
-                      borderRadius: '4px',
-                      border: '2px solid #00FF00', // Verde brillante
-                      minWidth: '200px',
-                      textAlign: 'center'
+                      color: 'white', 
+                      fontWeight: '600',
+                      fontSize: '1.1rem'
                     }}>
-                      NOMBRE: {saldo.usuarioNombre || 'Usuario sin nombre'}
-                      <div style={{ fontSize: '0.9rem', color: '#0000FF', marginTop: '0.25rem' }}>
-                        ID: {saldo.usuarioId}
-                      </div>
+                      {saldo.usuarioNombre || 'Usuario sin nombre'}
                     </div>
                     <div style={{ 
                       color: saldo.saldoTotal >= 0 ? '#10b981' : '#ef4444',
@@ -599,8 +585,7 @@ const CajaDiaria = () => {
                     <div>Transferencia: {formatCurrency(saldo.saldoTransferencia)}</div>
                   </div>
                 </div>
-                );
-              })
+              ))
             )}
           </div>
         </Section>
