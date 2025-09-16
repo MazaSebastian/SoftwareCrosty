@@ -1,13 +1,32 @@
 // Importar servicio de usuarios
 import { obtenerUsuarioActual, obtenerNombreCompleto } from './usuariosService';
+import { supabase, TABLES } from '../config/supabase';
 
 // Datos mock para desarrollo - Iniciando con datos limpios
 let movimientosCaja = [];
 
 export async function obtenerMovimientosCaja() {
-  // Simular delay de API
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return [...movimientosCaja];
+  try {
+    // Intentar obtener desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.MOVIMIENTOS_CAJA)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    // Si hay datos en Supabase, usarlos
+    if (data && data.length > 0) {
+      return data;
+    }
+    
+    // Si no hay datos en Supabase, usar datos locales
+    return [...movimientosCaja];
+  } catch (error) {
+    console.error('Error obteniendo movimientos desde Supabase, usando datos locales:', error);
+    // En caso de error, usar datos locales
+    return [...movimientosCaja];
+  }
 }
 
 export async function crearMovimientoCaja(movimiento) {
@@ -16,14 +35,35 @@ export async function crearMovimientoCaja(movimiento) {
   
   const nuevoMovimiento = {
     ...movimiento,
-    id: Date.now().toString(),
-    usuarioId: usuarioActual?.id || null,
-    usuarioNombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
-    createdAt: new Date().toISOString()
+    usuario_id: usuarioActual?.id || null,
+    usuario_nombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
+    created_at: new Date().toISOString()
   };
   
-  movimientosCaja.unshift(nuevoMovimiento);
-  return nuevoMovimiento;
+  try {
+    // Intentar guardar en Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.MOVIMIENTOS_CAJA)
+      .insert([nuevoMovimiento])
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    console.log('✅ Movimiento guardado en Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('Error guardando en Supabase, guardando localmente:', error);
+    
+    // En caso de error, guardar localmente
+    const movimientoLocal = {
+      ...nuevoMovimiento,
+      id: Date.now().toString()
+    };
+    
+    movimientosCaja.unshift(movimientoLocal);
+    return movimientoLocal;
+  }
 }
 
 export async function obtenerSaldosUsuarios() {
