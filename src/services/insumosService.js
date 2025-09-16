@@ -19,6 +19,7 @@ export async function crearInsumo(insumo) {
   const nuevoInsumo = {
     ...insumo,
     id: Date.now().toString(),
+    cantidad: parseFloat(insumo.cantidad) || 0,
     fechaUltimaCompra: null,
     fechaUltimoPrecio: new Date().toISOString(),
     activo: true,

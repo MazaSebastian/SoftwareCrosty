@@ -369,6 +369,7 @@ const Insumos = () => {
     nombre: '',
     categoria: '',
     unidad: 'kg',
+    cantidad: '',
     precioActual: '',
     proveedor: '',
     descripcion: '',
@@ -405,7 +406,7 @@ const Insumos = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nombre || !formData.precioActual) return;
+    if (!formData.nombre || !formData.precioActual || !formData.cantidad) return;
 
     try {
       const nuevoInsumo = await crearInsumo({
@@ -419,6 +420,7 @@ const Insumos = () => {
         nombre: '',
         categoria: '',
         unidad: 'kg',
+        cantidad: '',
         precioActual: '',
         proveedor: '',
         descripcion: '',
@@ -713,6 +715,18 @@ const Insumos = () => {
             </FormRow>
 
             <FormRow>
+              <FormGroup>
+                <label>Cantidad Comprada *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.cantidad}
+                  onChange={(e) => setFormData({ ...formData, cantidad: e.target.value })}
+                  placeholder="0.00"
+                  required
+                />
+              </FormGroup>
               <FormGroup>
                 <label>Precio Actual *</label>
                 <input
