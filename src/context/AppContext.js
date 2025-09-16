@@ -7,6 +7,7 @@ const AppContext = createContext(undefined);
 export const AppProvider = ({ children }) => {
   const [usuario, setUsuario] = useState(null);
   const [estadisticas, setEstadisticas] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Cargar usuario desde localStorage al iniciar
   useEffect(() => {
@@ -24,12 +25,23 @@ export const AppProvider = ({ children }) => {
     cargarUsuario();
   }, []);
 
-  // Guardar usuario en localStorage cuando cambie
-  useEffect(() => {
-    if (usuario) {
-      establecerUsuarioActual(usuario);
+  // Guardar usuario en localStorage cuando cambie (memoizado)
+  const handleSetUsuario = useCallback((newUsuario) => {
+    setUsuario(newUsuario);
+    if (newUsuario) {
+      establecerUsuarioActual(newUsuario);
     }
-  }, [usuario]);
+  }, []);
+
+  // Memoizar el valor del contexto para evitar re-renders innecesarios
+  const contextValue = useMemo(() => ({
+    usuario,
+    setUsuario: handleSetUsuario,
+    estadisticas,
+    setEstadisticas,
+    isLoading,
+    setIsLoading
+  }), [usuario, handleSetUsuario, estadisticas, isLoading]);
 
   // Actualizar estadísticas (memoizada para evitar re-renders)
   const actualizarEstadisticas = useCallback(async () => {
@@ -53,11 +65,13 @@ export const AppProvider = ({ children }) => {
   // Memoizar el valor del contexto para evitar re-renders innecesarios
   const value = useMemo(() => ({
     usuario,
-    setUsuario,
+    setUsuario: handleSetUsuario,
     estadisticas,
     setEstadisticas,
-    actualizarEstadisticas
-  }), [usuario, estadisticas, actualizarEstadisticas]);
+    actualizarEstadisticas,
+    isLoading,
+    setIsLoading
+  }), [usuario, handleSetUsuario, estadisticas, actualizarEstadisticas, isLoading]);
 
   return (
     <AppContext.Provider value={value}>
