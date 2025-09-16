@@ -33,6 +33,10 @@ export async function crearMovimientoCaja(movimiento) {
   // Obtener usuario actual
   const usuarioActual = obtenerUsuarioActual();
   
+  console.log('🔧 crearMovimientoCaja - usuarioActual:', usuarioActual);
+  console.log('🔧 crearMovimientoCaja - ID del usuario:', usuarioActual?.id);
+  console.log('🔧 crearMovimientoCaja - Tipo de ID:', typeof usuarioActual?.id);
+  
   const nuevoMovimiento = {
     ...movimiento,
     usuario_id: usuarioActual?.id || null,

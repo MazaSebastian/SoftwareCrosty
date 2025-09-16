@@ -226,6 +226,8 @@ const Login = () => {
 
       console.log('🔧 Usuario establecido:', usuario);
       console.log('🔧 ID del usuario:', usuario.id);
+      console.log('🔧 Tipo de ID:', typeof usuario.id);
+      console.log('🔧 Longitud del ID:', usuario.id?.length);
 
       // Redirigir después de 1 segundo
       setTimeout(() => {

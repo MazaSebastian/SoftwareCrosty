@@ -35,6 +35,8 @@ export const AppProvider = ({ children }) => {
 
   // Guardar usuario en localStorage cuando cambie (memoizado)
   const handleSetUsuario = useCallback((newUsuario) => {
+    console.log('🔧 handleSetUsuario llamado con:', newUsuario);
+    console.log('🔧 ID del nuevo usuario:', newUsuario?.id);
     setUsuario(newUsuario);
     if (newUsuario) {
       establecerUsuarioActual(newUsuario);

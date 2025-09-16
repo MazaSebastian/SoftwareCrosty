@@ -51,6 +51,8 @@ export const obtenerUsuarioPorId = async (id) => {
 
 // Obtener usuario actual
 export const obtenerUsuarioActual = () => {
+  console.log('🔧 obtenerUsuarioActual llamado, usuarioActual:', usuarioActual);
+  console.log('🔧 ID del usuario actual:', usuarioActual?.id);
   return usuarioActual;
 };
 
