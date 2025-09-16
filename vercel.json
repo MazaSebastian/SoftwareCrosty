@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "crosty-gastronomia",
+  "name": "crosty-software",
   "builds": [
     {
       "src": "package.json",
@@ -23,10 +23,37 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "REACT_APP_VERSION": "1.0.0",
+    "REACT_APP_NAME": "CROSTY Software",
+    "REACT_APP_ENVIRONMENT": "production"
   },
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "installCommand": "npm ci",
-  "framework": "create-react-app"
+  "framework": "create-react-app",
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
 }
