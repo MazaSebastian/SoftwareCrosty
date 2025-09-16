@@ -145,3 +145,36 @@ export async function obtenerMovimientosStock(productoId = null) {
   // Por ahora retornamos un array vacío
   return [];
 }
+
+// Funciones adicionales requeridas por Stock.jsx
+export async function obtenerMovimientosRecientes() {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return [];
+}
+
+export async function obtenerProductosStockBajo() {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return productosStock.filter(producto => 
+    producto.activo && producto.stockActual <= producto.stockMinimo
+  );
+}
+
+export async function crearProductoStock(producto) {
+  return await crearProducto(producto);
+}
+
+export async function registrarMovimientoStock(movimiento) {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  // En un sistema real, esto registraría el movimiento en una tabla
+  // Por ahora solo retornamos el movimiento
+  return {
+    ...movimiento,
+    id: Date.now().toString(),
+    fecha: new Date().toISOString()
+  };
+}
+
+export async function eliminarProductoStock(id) {
+  return await eliminarProducto(id);
+}
