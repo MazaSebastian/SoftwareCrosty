@@ -187,11 +187,10 @@ export const ventasSupabaseAdapter = {
     return {
       id: data.id,
       fecha: data.fecha,
-      tipo: 'receta', // Valor por defecto ya que la columna no existe
-      recetaId: data.receta_id || null,
-      recetaNombre: data.receta_nombre || data.producto || 'Producto',
-      cantidad: data.cantidad,
-      precioUnitario: parseFloat(data.precio_unitario),
+      tipo: 'venta', // Valor por defecto
+      descripcion: data.producto || 'Venta', // Usar producto como descripción
+      cantidad: data.cantidad || 1,
+      precio: parseFloat(data.precio_unitario), // El precio unitario es el total
       subtotal: parseFloat(data.subtotal),
       metodoPago: data.metodo_pago,
       cliente: data.cliente || '',
@@ -214,10 +213,10 @@ export const ventasSupabaseAdapter = {
       const movimientoCaja = {
         fecha: venta.fecha || new Date().toISOString(),
         tipo: 'ingreso',
-        concepto: `Venta: ${venta.recetaNombre}`,
+        concepto: `Venta: ${venta.descripcion || venta.recetaNombre || 'Producto'}`,
         monto: parseFloat(venta.subtotal || 0),
         metodo: venta.metodoPago || 'efectivo',
-        descripcion: `Venta automática: ${venta.cantidad} x ${venta.recetaNombre}`,
+        descripcion: `Venta automática: ${venta.descripcion || venta.recetaNombre || 'Producto'}`,
         usuario_id: usuarioActual?.id || venta.usuarioId,
         usuario_nombre: usuarioActual?.nombre || venta.usuarioNombre || 'Usuario',
         venta_id: venta.id, // Referencia a la venta original
@@ -251,17 +250,11 @@ export const ventasSupabaseAdapter = {
   transformVentaToSupabase(data) {
     return {
       fecha: data.fecha || new Date().toISOString(),
-      // tipo: data.tipo || 'receta', // Columna no existe en la tabla
-      producto: data.recetaNombre || 'Producto', // Usar 'producto' en lugar de 'receta_nombre'
-      cantidad: data.cantidad || 1,
-      precio_unitario: data.precioUnitario || 0,
-      subtotal: data.subtotal || 0,
+      producto: data.descripcion || 'Venta', // Usar descripción como producto
+      cantidad: 1, // Siempre 1 ya que el precio es total
+      precio_unitario: data.precio || 0, // El precio es el total
+      subtotal: data.subtotal || data.precio || 0,
       metodo_pago: data.metodoPago || 'efectivo',
-      // No incluir campos que no existen en la tabla actual
-      // cliente: data.cliente || '',
-      // notas: data.notas || '',
-      // receta_id: data.recetaId || null,
-      // receta_nombre: data.recetaNombre || 'Producto',
     };
   },
 };

@@ -334,11 +334,8 @@ const Ventas = () => {
   }
   
   const [formData, setFormData] = useState({
-    tipo: '',
-    recetaId: '',
-    recetaNombre: '',
-    cantidad: 1,
-    precioUnitario: 0,
+    descripcion: '',
+    precio: 0,
     metodoPago: 'efectivo',
     cliente: '',
     notas: '',
@@ -389,7 +386,7 @@ const Ventas = () => {
       console.log('🆕 Nueva venta recibida:', venta);
       setVentas(prev => [venta, ...prev]);
       setNotificationCount(prev => prev + 1);
-      showInfo(`Nueva venta: ${venta.usuarioNombre} vendió ${venta.cantidad} ${venta.producto}`);
+      showInfo(`Nueva venta: ${venta.usuarioNombre} vendió ${venta.descripcion}`);
     });
 
     // Listener para ventas actualizadas
@@ -403,7 +400,7 @@ const Ventas = () => {
     addListener('venta_eliminada', (venta) => {
       console.log('🗑️ Venta eliminada:', venta);
       setVentas(prev => prev.filter(v => v.id !== venta.id));
-      showInfo(`Venta eliminada: ${venta.producto}`);
+      showInfo(`Venta eliminada: ${venta.descripcion}`);
     });
 
     // Listener para cambios de conexión
@@ -429,10 +426,9 @@ const Ventas = () => {
     e.preventDefault();
     
     try {
-      const subtotal = formData.cantidad * formData.precioUnitario;
       const nuevaVenta = {
         ...formData,
-        subtotal,
+        subtotal: parseFloat(formData.precio), // El precio es el total
         fecha: new Date().toISOString()
       };
       
@@ -440,11 +436,8 @@ const Ventas = () => {
       await cargarDatos();
       setShowModal(false);
       setFormData({
-        tipo: '',
-        recetaId: '',
-        recetaNombre: '',
-        cantidad: 1,
-        precioUnitario: 0,
+        descripcion: '',
+        precio: 0,
         metodoPago: 'efectivo',
         cliente: '',
         notas: '',
@@ -467,18 +460,7 @@ const Ventas = () => {
     }
   };
 
-  const handleProductoChange = (productoId) => {
-    const producto = productos.find(p => p.id === productoId);
-    if (producto) {
-      setFormData({
-        ...formData,
-        tipo: producto.tipo,
-        recetaId: producto.id,
-        recetaNombre: producto.nombre,
-        precioUnitario: producto.precio
-      });
-    }
-  };
+  // Función eliminada - ya no necesitamos seleccionar productos de recetas
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-AR', {
@@ -582,9 +564,9 @@ const Ventas = () => {
               ventas.map(venta => (
                 <div key={venta.id} className="venta-item">
                   <div className="venta-info">
-                    <div className="producto">{venta.recetaNombre}</div>
+                    <div className="producto">{venta.descripcion}</div>
                     <div className="detalles">
-                      <span>Cantidad: {venta.cantidad}</span>
+                      <span>Precio: {formatCurrency(venta.precio)}</span>
                       <span>Cliente: {venta.cliente}</span>
                       <span>Fecha: {formatDate(venta.fecha)}</span>
                       {venta.notas && <span>Notas: {venta.notas}</span>}
@@ -612,43 +594,29 @@ const Ventas = () => {
             <h2 style={{ color: '#722F37', marginBottom: '1.5rem' }}>Nueva Venta</h2>
             <Form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Producto</label>
-                <select
-                  value={formData.recetaId}
-                  onChange={(e) => handleProductoChange(e.target.value)}
+                <label>Descripción de la Venta *</label>
+                <input
+                  type="text"
+                  placeholder="Ej: 3 pollos, 2 tartas de jamón y queso, 5 de hongos"
+                  value={formData.descripcion}
+                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                   required
-                >
-                  <option value="">Seleccionar producto</option>
-                  {productos.map(producto => (
-                    <option key={producto.id} value={producto.id}>
-                      {producto.nombre} - {formatCurrency(producto.precio)}
-                    </option>
-                  ))}
-                </select>
+                />
+                <small>Describe qué se vendió (productos, cantidades, etc.)</small>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Cantidad</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.cantidad}
-                    onChange={(e) => setFormData({ ...formData, cantidad: parseInt(e.target.value) })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Precio Unitario</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.precioUnitario}
-                    onChange={(e) => setFormData({ ...formData, precioUnitario: parseFloat(e.target.value) })}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label>Precio Total *</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={formData.precio}
+                  onChange={(e) => setFormData({ ...formData, precio: parseFloat(e.target.value) })}
+                  required
+                />
+                <small>Precio total de la venta</small>
               </div>
 
               <div className="form-group">
