@@ -1,135 +1,90 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-// Animación de rotación
 const spin = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 `;
 
-// Animación de pulso
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-`;
-
 const SpinnerContainer = styled.div`
-  display: flex;
-  justify-content: center;
+  display: inline-flex;
   align-items: center;
-  height: ${props => props.height || '400px'};
-  flex-direction: column;
-  color: #722F37;
-  background: ${props => props.background || 'transparent'};
-  border-radius: ${props => props.borderRadius || '0'};
-  padding: ${props => props.padding || '0'};
+  justify-content: center;
 `;
 
 const Spinner = styled.div`
-  width: ${props => props.size || '40px'};
-  height: ${props => props.size || '40px'};
-  border: 4px solid #E5E7EB;
-  border-top: 4px solid #722F37;
+  border: 2px solid ${props => props.color || 'rgba(114, 47, 55, 0.2)'};
+  border-top: 2px solid ${props => props.color || '#722F37'};
   border-radius: 50%;
+  width: ${props => props.size || '20px'};
+  height: ${props => props.size || '20px'};
   animation: ${spin} 1s linear infinite;
-  margin-bottom: ${props => props.text ? '20px' : '0'};
 `;
 
-const LoadingText = styled.p`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #722F37;
-  animation: ${pulse} 2s ease-in-out infinite;
+const SpinnerText = styled.span`
+  margin-left: ${props => props.size === 'small' ? '0.5rem' : '0.75rem'};
+  font-size: ${props => props.size === 'small' ? '0.875rem' : '1rem'};
+  color: ${props => props.color || '#722F37'};
 `;
 
-const LoadingDots = styled.div`
-  display: flex;
-  gap: 4px;
-  margin-top: 10px;
+const ButtonSpinner = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
   
-  .dot {
-    width: 8px;
-    height: 8px;
-    background-color: #722F37;
+  &::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
     border-radius: 50%;
-    animation: ${pulse} 1.4s ease-in-out infinite both;
-    
-    &:nth-child(1) { animation-delay: -0.32s; }
-    &:nth-child(2) { animation-delay: -0.16s; }
-    &:nth-child(3) { animation-delay: 0s; }
+    animation: ${spin} 1s linear infinite;
   }
 `;
 
-// Componente principal de loading
 const LoadingSpinner = ({ 
-  text = 'Cargando...', 
-  size = '40px', 
-  height = '400px',
-  showDots = false,
-  background = 'transparent',
-  borderRadius = '0',
-  padding = '0'
+  size = 'medium', 
+  color, 
+  text, 
+  showText = false,
+  className 
 }) => {
+  const sizeMap = {
+    small: '16px',
+    medium: '20px',
+    large: '32px'
+  };
+
+  const spinnerSize = sizeMap[size] || size;
+
+  if (showText && text) {
+    return (
+      <SpinnerContainer className={className}>
+        <Spinner size={spinnerSize} color={color} />
+        <SpinnerText size={size} color={color}>{text}</SpinnerText>
+      </SpinnerContainer>
+    );
+  }
+
   return (
-    <SpinnerContainer 
-      height={height}
-      background={background}
-      borderRadius={borderRadius}
-      padding={padding}
-    >
-      <Spinner size={size} text={text} />
-      {text && <LoadingText>{text}</LoadingText>}
-      {showDots && (
-        <LoadingDots>
-          <div className="dot"></div>
-          <div className="dot"></div>
-          <div className="dot"></div>
-        </LoadingDots>
-      )}
+    <SpinnerContainer className={className}>
+      <Spinner size={spinnerSize} color={color} />
     </SpinnerContainer>
   );
 };
 
-// Componente de loading para páginas completas
-export const PageLoading = ({ text = 'Cargando página...' }) => (
-  <LoadingSpinner 
-    text={text}
-    size="50px"
-    height="100vh"
-    background="#F5F5DC"
-    showDots={true}
-  />
-);
+const LoadingButton = ({ children, loading, ...props }) => {
+  return (
+    <button {...props} disabled={loading || props.disabled}>
+      {loading && <ButtonSpinner />}
+      {children}
+    </button>
+  );
+};
 
-// Componente de loading para secciones
-export const SectionLoading = ({ text = 'Cargando...' }) => (
-  <LoadingSpinner 
-    text={text}
-    size="30px"
-    height="200px"
-    background="#FFFFFF"
-    borderRadius="12px"
-    padding="2rem"
-    showDots={true}
-  />
-);
-
-// Componente de loading para botones
-export const ButtonLoading = ({ size = '20px' }) => (
-  <Spinner size={size} />
-);
-
-// Componente de loading para gráficos
-export const ChartLoading = ({ text = 'Cargando gráfico...' }) => (
-  <LoadingSpinner 
-    text={text}
-    size="35px"
-    height="300px"
-    background="#FFFFFF"
-    borderRadius="8px"
-    padding="1rem"
-  />
-);
-
+export { LoadingSpinner, LoadingButton, ButtonSpinner };
 export default LoadingSpinner;

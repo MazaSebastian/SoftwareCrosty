@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { obtenerInsumos, crearInsumo, actualizarInsumo, eliminarInsumo, obtenerHistorialPrecios, actualizarPrecioInsumo } from '../services/insumosService';
+import { SkeletonList } from '../components/SkeletonLoader';
+import { LoadingButton } from '../components/LoadingSpinner';
+import { useToast } from '../components/Toast';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -378,6 +381,9 @@ const Insumos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPrecioModalOpen, setIsPrecioModalOpen] = useState(false);
   const [selectedInsumo, setSelectedInsumo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     nombre: '',
     categoria: '',
@@ -401,10 +407,14 @@ const Insumos = () => {
 
   const cargarInsumos = async () => {
     try {
+      setLoading(true);
       const insumosData = await obtenerInsumos();
       setInsumos(insumosData);
     } catch (error) {
       console.error('Error al cargar insumos:', error);
+      showError('Error al cargar los insumos');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -422,6 +432,7 @@ const Insumos = () => {
     if (!formData.nombre || !formData.precioActual || !formData.cantidad) return;
 
     try {
+      setSaving(true);
       const nuevoInsumo = await crearInsumo({
         ...formData,
         precioActual: parseFloat(formData.precioActual)
@@ -439,8 +450,12 @@ const Insumos = () => {
         descripcion: '',
         fechaUltimaCompra: ''
       });
+      showSuccess('Insumo creado exitosamente');
     } catch (error) {
       console.error('Error al crear insumo:', error);
+      showError('Error al crear el insumo');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -587,7 +602,9 @@ const Insumos = () => {
         <Section>
           <h3>📋 Lista de Insumos</h3>
           <InsumosList>
-            {insumos.length === 0 ? (
+            {loading ? (
+              <SkeletonList count={4} />
+            ) : insumos.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', padding: '2rem' }}>
                 No hay insumos registrados
               </div>
@@ -809,9 +826,13 @@ const Insumos = () => {
               >
                 Cancelar
               </Button>
-              <Button type="submit">
+              <LoadingButton 
+                type="submit" 
+                loading={saving}
+                disabled={saving}
+              >
                 {selectedInsumo ? 'Actualizar' : 'Crear'} Insumo
-              </Button>
+              </LoadingButton>
             </ModalActions>
           </Form>
         </ModalContent>

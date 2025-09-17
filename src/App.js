@@ -7,6 +7,7 @@ import HamburgerMenuButton from './components/HamburgerButton';
 import { SectionLoading } from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import LogoutButton from './components/LogoutButton';
+import { ToastProvider } from './components/Toast';
 import './App.css';
 
 // Lazy loading de páginas para mejorar la velocidad de carga
@@ -114,8 +115,9 @@ function App() {
 
   return (
     <AppProvider>
-      <ProtectedRoute>
-        <div className="App">
+      <ToastProvider>
+        <ProtectedRoute>
+          <div className="App">
           <header className="app-header">
             <div className="header-content">
               <div className="header-left">
@@ -148,7 +150,8 @@ function App() {
             </main>
           </div>
         </div>
-      </ProtectedRoute>
+        </ProtectedRoute>
+      </ToastProvider>
     </AppProvider>
   );
 }
