@@ -1,9 +1,32 @@
+// Importar servicio de usuarios y Supabase
+import { obtenerUsuarioActual, obtenerNombreCompleto } from './usuariosService';
+import { supabase, TABLES } from '../config/supabase';
+
 // Datos mock para desarrollo - Iniciando con datos limpios
 let recetas = [];
 
 export async function obtenerRecetas() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return [...recetas].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  try {
+    // Intentar obtener desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.RECETAS)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    // Si hay datos en Supabase, usarlos
+    if (data && data.length > 0) {
+      return data;
+    }
+    
+    // Si no hay datos en Supabase, usar datos locales
+    return [...recetas].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  } catch (error) {
+    console.error('Error obteniendo recetas desde Supabase, usando datos locales:', error);
+    // En caso de error, usar datos locales
+    return [...recetas].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
 }
 
 // Función para obtener recetas con costos actualizados
@@ -28,23 +51,87 @@ export async function obtenerRecetasConCostos(insumos = []) {
 }
 
 export async function obtenerRecetaPorId(id) {
-  await new Promise(resolve => setTimeout(resolve, 50));
+  try {
+    // Intentar obtener desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.RECETAS)
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    
+    if (data) {
+      return data;
+    }
+  } catch (error) {
+    console.error('Error obteniendo receta desde Supabase, usando datos locales:', error);
+  }
+  
+  // Fallback a datos locales
   return recetas.find(receta => receta.id === id);
 }
 
 export async function crearReceta(receta) {
-  await new Promise(resolve => setTimeout(resolve, 200));
+  // Obtener usuario actual
+  const usuarioActual = obtenerUsuarioActual();
+  
+  console.log('🔧 crearReceta llamado con:', receta);
+  console.log('🔧 Usuario actual:', usuarioActual);
   
   const nuevaReceta = {
-    ...receta,
-    id: Date.now().toString(),
+    nombre: receta.nombre,
+    descripcion: receta.descripcion || null,
+    categoria: receta.categoria,
+    tipo: receta.tipo || 'general',
+    cantidad_base: parseFloat(receta.cantidadBase) || 1,
+    rendimiento: parseFloat(receta.rendimiento) || 1,
+    unidad_base: receta.unidadBase || 'unidad',
+    ingredientes: receta.ingredientes || [],
+    instrucciones: receta.instrucciones || null,
+    tiempo_preparacion: receta.tiempoPreparacion || null,
+    dificultad: receta.dificultad || 'media',
+    costo_total_ingredientes: 0, // Se calculará después
+    precio_venta: receta.precioVenta || null,
+    margen_ganancia: receta.margenGanancia || 0.3,
     activa: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    usuario_id: usuarioActual?.id || null,
+    usuario_nombre: usuarioActual ? obtenerNombreCompleto(usuarioActual) : 'Usuario no identificado',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
   
-  recetas.unshift(nuevaReceta);
-  return nuevaReceta;
+  try {
+    console.log('🔧 Intentando guardar receta en Supabase:', nuevaReceta);
+    
+    // Intentar guardar en Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.RECETAS)
+      .insert([nuevaReceta])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Receta guardada en Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error guardando en Supabase, guardando localmente:', error);
+    
+    // En caso de error, guardar localmente
+    const recetaLocal = {
+      ...nuevaReceta,
+      id: Date.now().toString(),
+      createdAt: nuevaReceta.created_at,
+      updatedAt: nuevaReceta.updated_at
+    };
+    
+    recetas.unshift(recetaLocal);
+    return recetaLocal;
+  }
 }
 
 export async function actualizarReceta(id, datosActualizacion) {
@@ -65,16 +152,37 @@ export async function actualizarReceta(id, datosActualizacion) {
 }
 
 export async function eliminarReceta(id) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const indice = recetas.findIndex(receta => receta.id === id);
-  if (indice === -1) {
-    throw new Error('Receta no encontrada');
+  try {
+    console.log('🔧 Intentando eliminar receta con ID:', id);
+    
+    // Intentar eliminar desde Supabase primero
+    const { data, error } = await supabase
+      .from(TABLES.RECETAS)
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Receta eliminada de Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error eliminando de Supabase, intentando localmente:', error);
+    
+    // En caso de error, intentar eliminar localmente
+    const indice = recetas.findIndex(receta => receta.id === id);
+    if (indice === -1) {
+      throw new Error('Receta no encontrada');
+    }
+    
+    // Eliminar la receta del array completamente
+    const recetaEliminada = recetas.splice(indice, 1)[0];
+    return recetaEliminada;
   }
-  
-  // Eliminar la receta del array completamente
-  const recetaEliminada = recetas.splice(indice, 1)[0];
-  return recetaEliminada;
 }
 
 // Función para escalar una receta a una cantidad deseada
