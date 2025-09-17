@@ -1,58 +1,32 @@
-// Datos mock para desarrollo - Iniciando con datos limpios
-let ventas = [];
+import { ventasSupabaseAdapter } from './ventasSupabaseAdapter';
 
+// Usar Supabase para ventas
 export async function obtenerVentas(filtros) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  let ventasFiltradas = [...ventas];
-
-  if (filtros) {
-    if (filtros.fechaInicio) {
-      ventasFiltradas = ventasFiltradas.filter(v => 
-        new Date(v.fecha) >= new Date(filtros.fechaInicio)
-      );
-    }
-    
-    if (filtros.fechaFin) {
-      ventasFiltradas = ventasFiltradas.filter(v => 
-        new Date(v.fecha) <= new Date(filtros.fechaFin)
-      );
-    }
-    
-    if (filtros.tipo) {
-      ventasFiltradas = ventasFiltradas.filter(v => v.tipo === filtros.tipo);
-    }
-    
-    if (filtros.metodoPago) {
-      ventasFiltradas = ventasFiltradas.filter(v => v.metodoPago === filtros.metodoPago);
-    }
-    
-    if (filtros.usuarioId) {
-      ventasFiltradas = ventasFiltradas.filter(v => v.usuarioId === filtros.usuarioId);
-    }
+  try {
+    return await ventasSupabaseAdapter.obtenerVentas(filtros);
+  } catch (error) {
+    console.error('Error obteniendo ventas:', error);
+    // Fallback a datos vacíos si hay error
+    return [];
   }
-
-  return ventasFiltradas.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 }
 
 export async function crearVenta(venta) {
-  const nuevaVenta = {
-    ...venta,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString()
-  };
-  
-  ventas.unshift(nuevaVenta);
-  return nuevaVenta;
+  try {
+    return await ventasSupabaseAdapter.crearVenta(venta);
+  } catch (error) {
+    console.error('Error creando venta:', error);
+    throw error;
+  }
 }
 
 export async function eliminarVenta(id) {
-  const index = ventas.findIndex(v => v.id === id);
-  if (index !== -1) {
-    ventas.splice(index, 1);
-    return true;
+  try {
+    return await ventasSupabaseAdapter.eliminarVenta(id);
+  } catch (error) {
+    console.error('Error eliminando venta:', error);
+    throw error;
   }
-  return false;
 }
 
 export async function obtenerVentasPorPeriodo(fechaInicio, fechaFin) {
@@ -60,42 +34,25 @@ export async function obtenerVentasPorPeriodo(fechaInicio, fechaFin) {
 }
 
 export async function obtenerEstadisticasVentas(filtros) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  const ventasFiltradas = await obtenerVentas(filtros);
-  
-  const estadisticas = {
-    totalVentas: ventasFiltradas.length,
-    totalIngresos: ventasFiltradas.reduce((sum, v) => sum + v.subtotal, 0),
-    ventasEfectivo: ventasFiltradas.filter(v => v.metodoPago === 'efectivo').length,
-    ventasTransferencia: ventasFiltradas.filter(v => v.metodoPago === 'transferencia').length,
-    ingresosEfectivo: ventasFiltradas
-      .filter(v => v.metodoPago === 'efectivo')
-      .reduce((sum, v) => sum + v.subtotal, 0),
-    ingresosTransferencia: ventasFiltradas
-      .filter(v => v.metodoPago === 'transferencia')
-      .reduce((sum, v) => sum + v.subtotal, 0),
-    ventasPorTipo: {},
-    ventasPorUsuario: {},
-    promedioVenta: 0
-  };
-  
-  // Calcular ventas por tipo
-  ventasFiltradas.forEach(venta => {
-    estadisticas.ventasPorTipo[venta.tipo] = (estadisticas.ventasPorTipo[venta.tipo] || 0) + 1;
-  });
-  
-  // Calcular ventas por usuario
-  ventasFiltradas.forEach(venta => {
-    estadisticas.ventasPorUsuario[venta.usuarioId] = (estadisticas.ventasPorUsuario[venta.usuarioId] || 0) + 1;
-  });
-  
-  // Calcular promedio
-  if (estadisticas.totalVentas > 0) {
-    estadisticas.promedioVenta = estadisticas.totalIngresos / estadisticas.totalVentas;
+  try {
+    return await ventasSupabaseAdapter.obtenerEstadisticasVentas(filtros);
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de ventas:', error);
+    // Fallback a estadísticas vacías si hay error
+    return {
+      totalVentas: 0,
+      totalIngresos: 0,
+      ventasEfectivo: 0,
+      ventasTransferencia: 0,
+      ventasTarjeta: 0,
+      ventasHoy: 0,
+      ventasSemana: 0,
+      ventasMes: 0,
+      ingresosHoy: 0,
+      ingresosSemana: 0,
+      ingresosMes: 0,
+    };
   }
-  
-  return estadisticas;
 }
 
 export async function obtenerVentasHoy() {
@@ -150,39 +107,28 @@ export async function obtenerVentaPorId(id) {
 }
 
 export async function obtenerProductosDisponibles() {
-  // Mock de productos disponibles para venta
-  return [
-    {
-      id: 'tarta_pollo',
-      nombre: 'Tarta de Pollo',
-      tipo: 'tarta_salada',
-      precio: 500,
-      disponible: true,
-      categoria: 'Tartas Saladas'
-    },
-    {
-      id: 'tarta_verdura',
-      nombre: 'Tarta de Verdura',
-      tipo: 'tarta_salada',
-      precio: 450,
-      disponible: true,
-      categoria: 'Tartas Saladas'
-    },
-    {
-      id: 'pollo_bbq',
-      nombre: 'Pollo BBQ',
-      tipo: 'pollo_condimentado',
-      precio: 800,
-      disponible: true,
-      categoria: 'Pollos Condimentados'
-    },
-    {
-      id: 'pollo_herbes',
-      nombre: 'Pollo con Hierbas',
-      tipo: 'pollo_condimentado',
-      precio: 750,
-      disponible: true,
-      categoria: 'Pollos Condimentados'
-    }
-  ];
+  try {
+    return await ventasSupabaseAdapter.obtenerProductosDisponibles();
+  } catch (error) {
+    console.error('Error obteniendo productos disponibles:', error);
+    // Fallback a productos mock si hay error
+    return [
+      {
+        id: 'tarta_pollo',
+        nombre: 'Tarta de Pollo',
+        tipo: 'tarta_salada',
+        precio: 500,
+        disponible: true,
+        categoria: 'Tartas Saladas'
+      },
+      {
+        id: 'tarta_verdura',
+        nombre: 'Tarta de Verdura',
+        tipo: 'tarta_salada',
+        precio: 450,
+        disponible: true,
+        categoria: 'Tartas Saladas'
+      }
+    ];
+  }
 }
