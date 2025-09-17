@@ -4,11 +4,9 @@ import { obtenerInsumos, crearInsumo, actualizarInsumo, eliminarInsumo, obtenerH
 import { SkeletonList } from '../components/SkeletonLoader';
 import { LoadingButton } from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
+import { ResponsiveContainer, StatsGrid, CardsGrid, FormGrid, ResponsiveButton } from '../components/GridResponsive';
 
-const PageContainer = styled.div`
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+const PageContainer = styled(ResponsiveContainer)`
   background: #FFFFFF;
   min-height: 100vh;
 `;
@@ -77,10 +75,7 @@ const Button = styled.button`
   }
 `;
 
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+const StatsGridStyled = styled(StatsGrid)`
   margin-bottom: 2rem;
 `;
 
@@ -563,7 +558,7 @@ const Insumos = () => {
         </Button>
       </Header>
 
-      <StatsGrid>
+      <StatsGridStyled>
         <StatCard className="info">
           <div className="stat-header">
             <div className="stat-title">Total Insumos</div>
@@ -596,7 +591,7 @@ const Insumos = () => {
             Por unidad
           </div>
         </StatCard>
-      </StatsGrid>
+      </StatsGridStyled>
 
       <ContentGrid>
         <Section>

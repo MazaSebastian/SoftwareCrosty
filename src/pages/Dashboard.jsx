@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useApp } from '../context/AppContext';
 import { useMemoizedData } from '../hooks/useMemoizedData';
+import { ResponsiveContainer, StatsGrid, CardsGrid, Card } from '../components/GridResponsive';
 // Funciones de fecha simples
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('es-AR', {
@@ -11,10 +12,7 @@ const formatDate = (date) => {
   });
 };
 
-const DashboardContainer = styled.div`
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+const DashboardContainer = styled(ResponsiveContainer)`
   background: #F5F5DC;
   min-height: 100vh;
 `;
@@ -37,10 +35,7 @@ const Header = styled.div`
   }
 `;
 
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+const StatsGridStyled = styled(StatsGrid)`
   margin-bottom: 2rem;
 `;
 
@@ -255,7 +250,7 @@ const Dashboard = () => {
         </div>
       </Header>
 
-      <StatsGrid>
+      <StatsGridStyled>
         <StatCard className="success">
           <div className="stat-header">
             <div className="stat-title">Ventas Hoy</div>
@@ -325,7 +320,7 @@ const Dashboard = () => {
             Recetas disponibles para producción
           </div>
         </StatCard>
-      </StatsGrid>
+      </StatsGridStyled>
 
       <QuickActions>
         <h3>Acciones Rápidas</h3>
