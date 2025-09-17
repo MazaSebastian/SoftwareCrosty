@@ -15,8 +15,6 @@ const recetasEstandarizadas = [
       { insumoId: 'sal', nombre: 'Sal', cantidad: 0.01, unidad: 'kg', costoUnitario: 0 },
       { insumoId: 'pimienta', nombre: 'Pimienta', cantidad: 0.005, unidad: 'kg', costoUnitario: 0 }
     ],
-    tiempoPreparacion: 30, // minutos
-    tiempoCoccion: 45, // minutos
     dificultad: 'media',
     activa: true,
     createdAt: new Date().toISOString(),
@@ -39,8 +37,6 @@ const recetasEstandarizadas = [
       { insumoId: 'queso-muzzarella', nombre: 'Queso Muzzarella', cantidad: 0.2, unidad: 'kg', costoUnitario: 0 },
       { insumoId: 'sal', nombre: 'Sal', cantidad: 0.01, unidad: 'kg', costoUnitario: 0 }
     ],
-    tiempoPreparacion: 45, // minutos
-    tiempoCoccion: 25, // minutos
     dificultad: 'media',
     activa: true,
     createdAt: new Date().toISOString(),
@@ -64,8 +60,6 @@ const recetasEstandarizadas = [
       { insumoId: 'sal', nombre: 'Sal', cantidad: 0.02, unidad: 'kg', costoUnitario: 0 },
       { insumoId: 'pimienta', nombre: 'Pimienta', cantidad: 0.01, unidad: 'kg', costoUnitario: 0 }
     ],
-    tiempoPreparacion: 60, // minutos
-    tiempoCoccion: 30, // minutos
     dificultad: 'alta',
     activa: true,
     createdAt: new Date().toISOString(),

@@ -427,7 +427,6 @@ const Recetas = () => {
     nombre: '',
     descripcion: '',
     porciones: '',
-    tiempoPreparacion: '',
     categoria: '',
     ingredientes: []
   });
@@ -464,7 +463,6 @@ const Recetas = () => {
       const recetaData = {
         ...formData,
         porciones: parseInt(formData.porciones),
-        tiempoPreparacion: parseInt(formData.tiempoPreparacion) || 0,
         ingredientes: formData.ingredientes.map(ing => ({
           ...ing,
           cantidad: parseFloat(ing.cantidad)
@@ -531,7 +529,6 @@ const Recetas = () => {
       nombre: receta.nombre,
       descripcion: receta.descripcion,
       porciones: receta.porciones.toString(),
-      tiempoPreparacion: receta.tiempoPreparacion.toString(),
       categoria: receta.categoria,
       ingredientes: receta.ingredientes
     });
@@ -576,7 +573,6 @@ const Recetas = () => {
       nombre: '',
       descripcion: '',
       porciones: '',
-      tiempoPreparacion: '',
       categoria: '',
       ingredientes: []
     });
@@ -685,20 +681,16 @@ const Recetas = () => {
                   
                   <div className="receta-details">
                     <div className="detail-item">
-                      <div className="label">Porciones</div>
-                      <div className="value">{receta.porciones}</div>
-                    </div>
-                    <div className="detail-item">
-                      <div className="label">Tiempo</div>
-                      <div className="value">{receta.tiempoPreparacion} min</div>
+                      <div className="label">Cantidad Base</div>
+                      <div className="value">{receta.cantidadBase} {receta.unidadBase}</div>
                     </div>
                     <div className="detail-item">
                       <div className="label">Costo Total</div>
                       <div className="value">{formatCurrency(receta.costoTotal || 0)}</div>
                     </div>
                     <div className="detail-item">
-                      <div className="label">Costo por Porción</div>
-                      <div className="value">{formatCurrency((receta.costoTotal || 0) / receta.porciones)}</div>
+                      <div className="label">Costo por {receta.unidadBase}</div>
+                      <div className="value">{formatCurrency(receta.costoPorUnidad || 0)}</div>
                     </div>
                   </div>
                   
@@ -757,16 +749,6 @@ const Recetas = () => {
                   onChange={(e) => setFormData({ ...formData, porciones: e.target.value })}
                   placeholder="8"
                   required
-                />
-              </FormGroup>
-              <FormGroup>
-                <label>Tiempo de Preparación (min)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.tiempoPreparacion}
-                  onChange={(e) => setFormData({ ...formData, tiempoPreparacion: e.target.value })}
-                  placeholder="30"
                 />
               </FormGroup>
             </FormRow>
