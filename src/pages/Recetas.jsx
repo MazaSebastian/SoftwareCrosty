@@ -442,22 +442,55 @@ const Recetas = () => {
 
   const cargarDatos = async () => {
     try {
+      console.log('🔧 cargarDatos iniciado');
+      
       const [insumosData] = await Promise.all([
         obtenerInsumos()
       ]);
+      
+      console.log('🔧 Insumos cargados:', {
+        insumosCount: insumosData.length,
+        insumos: insumosData
+      });
+      
       setInsumos(insumosData);
       
       // Obtener recetas con costos actualizados
+      console.log('🔧 Obteniendo recetas con costos...');
       const recetasConCostos = await obtenerRecetasConCostos(insumosData);
+      
+      console.log('🔧 Recetas con costos:', {
+        recetasCount: recetasConCostos.length,
+        recetas: recetasConCostos
+      });
+      
       setRecetas(recetasConCostos);
+      
+      console.log('✅ Estados actualizados');
     } catch (error) {
-      console.error('Error al cargar datos:', error);
+      console.error('❌ Error al cargar datos:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nombre || !formData.porciones || formData.ingredientes.length === 0) return;
+    
+    console.log('🔧 handleSubmit iniciado');
+    console.log('🔧 formData:', formData);
+    console.log('🔧 selectedReceta:', selectedReceta);
+    
+    if (!formData.nombre || !formData.porciones || formData.ingredientes.length === 0) {
+      console.log('❌ Validación fallida:', {
+        nombre: formData.nombre,
+        porciones: formData.porciones,
+        ingredientesLength: formData.ingredientes.length
+      });
+      return;
+    }
 
     try {
       const recetaData = {
@@ -469,17 +502,33 @@ const Recetas = () => {
         }))
       };
 
+      console.log('🔧 recetaData preparado:', recetaData);
+
       if (selectedReceta) {
-        await actualizarReceta(selectedReceta.id, recetaData);
+        console.log('🔧 Actualizando receta existente:', selectedReceta.id);
+        const resultado = await actualizarReceta(selectedReceta.id, recetaData);
+        console.log('✅ Receta actualizada:', resultado);
       } else {
-        await crearReceta(recetaData);
+        console.log('🔧 Creando nueva receta');
+        const resultado = await crearReceta(recetaData);
+        console.log('✅ Receta creada:', resultado);
       }
       
+      console.log('🔧 Recargando datos...');
       await cargarDatos();
+      console.log('✅ Datos recargados');
+      
       setIsModalOpen(false);
       resetForm();
+      console.log('✅ Modal cerrado y formulario reseteado');
     } catch (error) {
-      console.error('Error al guardar receta:', error);
+      console.error('❌ Error al guardar receta:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        formData: formData,
+        selectedReceta: selectedReceta
+      });
     }
   };
 
