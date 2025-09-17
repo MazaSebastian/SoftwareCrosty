@@ -408,23 +408,15 @@ const Form = styled.form`
 
 const Stock = () => {
   const [productos, setProductos] = useState([]);
-  const [estadisticas, setEstadisticas] = useState(null);
-  const [movimientos, setMovimientos] = useState([]);
   const [productosStockBajo, setProductosStockBajo] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState('producto');
   const [selectedProducto, setSelectedProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     nombre: '',
     categoria: '',
-    stockActual: 0,
-    stockMinimo: 0,
-    stockMaximo: 0,
-    precioVenta: 0,
-    costoUnitario: 0,
-    ubicacion: '',
-    activo: true
+    cantidad: 0,
+    stockMinimo: 10 // Alerta automática a 10 unidades
   });
 
   useEffect(() => {
@@ -434,16 +426,12 @@ const Stock = () => {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const [productosData, estadisticasData, movimientosData, stockBajoData] = await Promise.all([
+      const [productosData, stockBajoData] = await Promise.all([
         obtenerProductosStock(),
-        obtenerEstadisticasStock(),
-        obtenerMovimientosRecientes(10),
         obtenerProductosStockBajo()
       ]);
       
       setProductos(productosData);
-      setEstadisticas(estadisticasData);
-      setMovimientos(movimientosData);
       setProductosStockBajo(stockBajoData);
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -456,14 +444,14 @@ const Stock = () => {
     e.preventDefault();
     
     try {
-      if (modalType === 'producto') {
-        await crearProductoStock(formData);
-      } else if (modalType === 'movimiento') {
-        await registrarMovimientoStock({
-          ...formData,
-          productoId: selectedProducto.id,
-          productoNombre: selectedProducto.nombre
+      if (selectedProducto) {
+        // Actualizar cantidad existente
+        await actualizarProductoStock(selectedProducto.id, { 
+          cantidad: formData.cantidad 
         });
+      } else {
+        // Crear nuevo producto
+        await crearProductoStock(formData);
       }
       
       await cargarDatos();
@@ -487,29 +475,22 @@ const Stock = () => {
   };
 
   const handleAjustarStock = async (producto) => {
-    const nuevaCantidad = prompt(`Ajustar stock de ${producto.nombre} (actual: ${producto.stockActual}):`, producto.stockActual);
-    if (nuevaCantidad !== null && !isNaN(nuevaCantidad)) {
-      try {
-        await ajustarStock(producto.id, parseInt(nuevaCantidad), 'Ajuste manual', '');
-        await cargarDatos();
-      } catch (error) {
-        console.error('Error ajustando stock:', error);
-        alert(error.message || 'Error al ajustar stock');
-      }
-    }
+    setSelectedProducto(producto);
+    setFormData({
+      nombre: producto.nombre,
+      categoria: producto.categoria,
+      cantidad: producto.cantidad,
+      stockMinimo: producto.stockMinimo
+    });
+    setShowModal(true);
   };
 
   const resetForm = () => {
     setFormData({
       nombre: '',
       categoria: '',
-      stockActual: 0,
-      stockMinimo: 0,
-      stockMaximo: 0,
-      precioVenta: 0,
-      costoUnitario: 0,
-      ubicacion: '',
-      activo: true
+      cantidad: 0,
+      stockMinimo: 10
     });
     setSelectedProducto(null);
   };
@@ -549,15 +530,15 @@ const Stock = () => {
       <Header>
         <div>
           <h1>Control de Stock</h1>
-          <div className="subtitle">Gestión de inventario de productos</div>
+          <div className="subtitle">Control de mercadería frizada</div>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Button onClick={() => {
-            setModalType('producto');
+            setSelectedProducto(null);
             setShowModal(true);
           }}>
             <span>📦</span>
-            Nuevo Producto
+            Agregar Producto
           </Button>
         </div>
       </Header>
@@ -568,7 +549,7 @@ const Stock = () => {
             <span className="stat-icon">📦</span>
             <span className="stat-label">Total Productos</span>
           </div>
-          <div className="stat-value">{estadisticas?.totalProductos || 0}</div>
+          <div className="stat-value">{productos.length}</div>
           <div className="stat-subtitle">En inventario</div>
         </StatCard>
 
@@ -577,26 +558,8 @@ const Stock = () => {
             <span className="stat-icon">⚠️</span>
             <span className="stat-label">Stock Bajo</span>
           </div>
-          <div className="stat-value">{estadisticas?.productosStockBajo || 0}</div>
-          <div className="stat-subtitle">Productos</div>
-        </StatCard>
-
-        <StatCard className="info">
-          <div className="stat-header">
-            <span className="stat-icon">💰</span>
-            <span className="stat-label">Valor Stock</span>
-          </div>
-          <div className="stat-value">{formatCurrency(estadisticas?.valorTotalStock || 0)}</div>
-          <div className="stat-subtitle">Costo total</div>
-        </StatCard>
-
-        <StatCard className="warning">
-          <div className="stat-header">
-            <span className="stat-icon">📈</span>
-            <span className="stat-label">Margen</span>
-          </div>
-          <div className="stat-value">{formatCurrency(estadisticas?.margenTotal || 0)}</div>
-          <div className="stat-subtitle">Potencial</div>
+          <div className="stat-value">{productosStockBajo.length}</div>
+          <div className="stat-subtitle">≤ 10 unidades</div>
         </StatCard>
       </StatsGrid>
 
@@ -615,38 +578,21 @@ const Stock = () => {
                     <div className="nombre">{producto.nombre}</div>
                     <div className="detalles">
                       <span>Categoría: {producto.categoria}</span>
-                      <span>Ubicación: {producto.ubicacion}</span>
-                      <span>Precio: {formatCurrency(producto.precioVenta)}</span>
+                      <span>Stock mínimo: {producto.stockMinimo}</span>
                     </div>
                   </div>
                   <div className="producto-stock">
-                    <div className="stock-actual" stockBajo={producto.stockActual <= producto.stockMinimo}>
-                      {producto.stockActual}
+                    <div className="stock-actual" stockBajo={producto.cantidad <= producto.stockMinimo}>
+                      {producto.cantidad}
                     </div>
-                    <div className="stock-minimo">Mín: {producto.stockMinimo}</div>
+                    <div className="stock-minimo">Unidades</div>
                   </div>
                   <div className="producto-actions">
                     <button 
-                      onClick={() => {
-                        setSelectedProducto(producto);
-                        setModalType('movimiento');
-                        setFormData({
-                          tipo: 'entrada',
-                          cantidad: 0,
-                          motivo: 'Producción',
-                          notas: ''
-                        });
-                        setShowModal(true);
-                      }}
-                      title="Registrar movimiento"
-                    >
-                      📝
-                    </button>
-                    <button 
                       onClick={() => handleAjustarStock(producto)}
-                      title="Ajustar stock"
+                      title="Modificar cantidad"
                     >
-                      ⚖️
+                      ✏️
                     </button>
                     <button 
                       onClick={() => handleDelete(producto.id)}
@@ -663,29 +609,27 @@ const Stock = () => {
         </Section>
 
         <Section>
-          <h3>📋 Movimientos Recientes</h3>
+          <h3>⚠️ Productos con Stock Bajo</h3>
           <MovimientosList>
-            {movimientos.length === 0 ? (
+            {productosStockBajo.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '2rem', color: '#6B7280' }}>
-                No hay movimientos
+                ✅ Todos los productos tienen stock suficiente
               </div>
             ) : (
-              movimientos.map(movimiento => (
-                <div key={movimiento.id} className="movimiento-item">
-                  <div className="movimiento-icon" tipo={movimiento.tipo}>
-                    {movimiento.tipo === 'entrada' ? '📈' : 
-                     movimiento.tipo === 'salida' ? '📉' : '⚖️'}
+              productosStockBajo.map(producto => (
+                <div key={producto.id} className="movimiento-item">
+                  <div className="movimiento-icon" tipo="warning">
+                    ⚠️
                   </div>
                   <div className="movimiento-content">
-                    <div className="movimiento-title">{movimiento.productoNombre}</div>
+                    <div className="movimiento-title">{producto.nombre}</div>
                     <div className="movimiento-details">
-                      {movimiento.motivo} • {formatDate(movimiento.fecha)}
+                      {producto.categoria} • Stock actual: {producto.cantidad}
                     </div>
                   </div>
                   <div className="movimiento-cantidad">
-                    <div className="cantidad" tipo={movimiento.tipo}>
-                      {movimiento.tipo === 'entrada' ? '+' : 
-                       movimiento.tipo === 'salida' ? '-' : ''}{movimiento.cantidad}
+                    <div className="cantidad" tipo="warning">
+                      {producto.cantidad}
                     </div>
                   </div>
                 </div>
@@ -699,159 +643,63 @@ const Stock = () => {
         <Modal onClick={() => setShowModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <h2 style={{ color: '#722F37', marginBottom: '1.5rem' }}>
-              {modalType === 'producto' ? 'Nuevo Producto' : 'Registrar Movimiento'}
+              {selectedProducto ? 'Modificar Producto' : 'Agregar Producto'}
             </h2>
             <Form onSubmit={handleSubmit}>
-              {modalType === 'producto' ? (
-                <>
-                  <div className="form-group">
-                    <label>Nombre del Producto</label>
-                    <input
-                      type="text"
-                      value={formData.nombre}
-                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                      required
-                    />
-                  </div>
+              <div className="form-group">
+                <label>Nombre del Producto</label>
+                <input
+                  type="text"
+                  value={formData.nombre}
+                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  required
+                />
+              </div>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Categoría</label>
-                      <select
-                        value={formData.categoria}
-                        onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                        required
-                      >
-                        <option value="">Seleccionar categoría</option>
-                        <option value="Tartas Saladas">Tartas Saladas</option>
-                        <option value="Pollos Condimentados">Pollos Condimentados</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Ubicación</label>
-                      <input
-                        type="text"
-                        value={formData.ubicacion}
-                        onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
-                        placeholder="Ej: Freezer A"
-                      />
-                    </div>
-                  </div>
+              <div className="form-group">
+                <label>Categoría</label>
+                <select
+                  value={formData.categoria}
+                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                  required
+                >
+                  <option value="">Seleccionar categoría</option>
+                  <option value="Tartas Saladas">Tartas Saladas</option>
+                  <option value="Pollos Condimentados">Pollos Condimentados</option>
+                  <option value="Otros">Otros</option>
+                </select>
+              </div>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Stock Actual</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.stockActual}
-                        onChange={(e) => setFormData({ ...formData, stockActual: parseInt(e.target.value) })}
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Stock Mínimo</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.stockMinimo}
-                        onChange={(e) => setFormData({ ...formData, stockMinimo: parseInt(e.target.value) })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Precio de Venta</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.precioVenta}
-                        onChange={(e) => setFormData({ ...formData, precioVenta: parseFloat(e.target.value) })}
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Costo Unitario</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.costoUnitario}
-                        onChange={(e) => setFormData({ ...formData, costoUnitario: parseFloat(e.target.value) })}
-                        required
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="form-group">
-                    <label>Producto</label>
-                    <input
-                      type="text"
-                      value={selectedProducto?.nombre || ''}
-                      disabled
-                    />
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Tipo de Movimiento</label>
-                      <select
-                        value={formData.tipo}
-                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                        required
-                      >
-                        <option value="entrada">Entrada</option>
-                        <option value="salida">Salida</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Cantidad</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={formData.cantidad}
-                        onChange={(e) => setFormData({ ...formData, cantidad: parseInt(e.target.value) })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Motivo</label>
-                    <select
-                      value={formData.motivo}
-                      onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
-                      required
-                    >
-                      <option value="Producción">Producción</option>
-                      <option value="Venta">Venta</option>
-                      <option value="Ajuste">Ajuste</option>
-                      <option value="Devolución">Devolución</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Notas</label>
-                    <textarea
-                      value={formData.notas}
-                      onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                      placeholder="Notas adicionales..."
-                    />
-                  </div>
-                </>
-              )}
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Cantidad Actual</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.cantidad}
+                    onChange={(e) => setFormData({ ...formData, cantidad: parseInt(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Stock Mínimo</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.stockMinimo}
+                    onChange={(e) => setFormData({ ...formData, stockMinimo: parseInt(e.target.value) })}
+                    required
+                  />
+                  <small>Alerta cuando queden estas unidades</small>
+                </div>
+              </div>
 
               <div className="form-actions">
                 <Button type="button" className="secondary" onClick={() => setShowModal(false)}>
                   Cancelar
                 </Button>
                 <Button type="submit">
-                  {modalType === 'producto' ? 'Crear Producto' : 'Registrar Movimiento'}
+                  {selectedProducto ? 'Actualizar' : 'Agregar'}
                 </Button>
               </div>
             </Form>

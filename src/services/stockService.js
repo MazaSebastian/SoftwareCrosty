@@ -17,7 +17,8 @@ export async function crearProducto(producto) {
   const nuevoProducto = {
     ...producto,
     id: Date.now().toString(),
-    stockActual: producto.stockActual || 0,
+    cantidad: producto.cantidad || 0,
+    stockMinimo: producto.stockMinimo || 10,
     activo: true,
     createdAt: new Date().toISOString()
   };
@@ -91,7 +92,7 @@ export async function obtenerProductosBajoStock() {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   return productosStock.filter(producto => 
-    producto.activo && producto.stockActual <= producto.stockMinimo
+    producto.activo && producto.cantidad <= producto.stockMinimo
   );
 }
 
@@ -155,12 +156,16 @@ export async function obtenerMovimientosRecientes() {
 export async function obtenerProductosStockBajo() {
   await new Promise(resolve => setTimeout(resolve, 100));
   return productosStock.filter(producto => 
-    producto.activo && producto.stockActual <= producto.stockMinimo
+    producto.activo && producto.cantidad <= producto.stockMinimo
   );
 }
 
 export async function crearProductoStock(producto) {
   return await crearProducto(producto);
+}
+
+export async function actualizarProductoStock(id, datosActualizacion) {
+  return await actualizarProducto(id, datosActualizacion);
 }
 
 export async function registrarMovimientoStock(movimiento) {
