@@ -241,6 +241,42 @@ export async function escalarReceta(receta, cantidadDeseada) {
   return recetaEscalada;
 }
 
+// Función para convertir unidades y calcular costo
+function convertirUnidades(cantidad, unidadOrigen, unidadDestino, precioUnitario) {
+  // Casos especiales de conversión
+  if (unidadOrigen === 'unidad' && unidadDestino === 'maple') {
+    // Si el insumo se vende por maple (30 unidades) pero la receta usa unidades individuales
+    const precioPorUnidad = precioUnitario / 30; // $5.690 ÷ 30 = $189.67 por huevo
+    return cantidad * precioPorUnidad;
+  }
+  
+  if (unidadOrigen === 'maple' && unidadDestino === 'unidad') {
+    // Si el insumo se vende por unidad pero la receta usa maples
+    return cantidad * precioUnitario * 30;
+  }
+  
+  // Conversiones de peso
+  if (unidadOrigen === 'g' && unidadDestino === 'kg') {
+    return (cantidad / 1000) * precioUnitario;
+  }
+  
+  if (unidadOrigen === 'kg' && unidadDestino === 'g') {
+    return (cantidad * 1000) * precioUnitario;
+  }
+  
+  // Conversiones de volumen
+  if (unidadOrigen === 'ml' && unidadDestino === 'l') {
+    return (cantidad / 1000) * precioUnitario;
+  }
+  
+  if (unidadOrigen === 'l' && unidadDestino === 'ml') {
+    return (cantidad * 1000) * precioUnitario;
+  }
+  
+  // Si no hay conversión específica, usar cálculo directo
+  return cantidad * precioUnitario;
+}
+
 // Función para calcular costo de receta con precios actuales de insumos
 export async function calcularCostoReceta(receta, insumos = []) {
   await new Promise(resolve => setTimeout(resolve, 100));
@@ -254,7 +290,31 @@ export async function calcularCostoReceta(receta, insumos = []) {
     const insumo = insumos.find(i => i.id === ingrediente.insumoId || i.nombre === ingrediente.nombre);
     const precioUnitario = insumo ? insumo.precioActual || insumo.precio_unitario || 0 : ingrediente.costoUnitario || 0;
     
-    return total + (ingrediente.cantidad * precioUnitario);
+    // Calcular el costo considerando las unidades del insumo
+    let costoIngrediente = 0;
+    
+    if (insumo && insumo.unidad && ingrediente.unidad) {
+      // Si las unidades coinciden, usar directamente
+      if (insumo.unidad === ingrediente.unidad) {
+        costoIngrediente = ingrediente.cantidad * precioUnitario;
+      } else {
+        // Convertir unidades si es necesario
+        costoIngrediente = convertirUnidades(ingrediente.cantidad, ingrediente.unidad, insumo.unidad, precioUnitario);
+      }
+    } else {
+      // Fallback: usar cálculo directo
+      costoIngrediente = ingrediente.cantidad * precioUnitario;
+    }
+    
+    console.log(`🔧 Cálculo ingrediente ${ingrediente.nombre || ingrediente.insumoNombre}:`, {
+      cantidad: ingrediente.cantidad,
+      unidad: ingrediente.unidad,
+      precioUnitario,
+      costoIngrediente,
+      insumoUnidad: insumo?.unidad
+    });
+    
+    return total + costoIngrediente;
   }, 0);
   
   return costoTotal;
