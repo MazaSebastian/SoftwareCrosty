@@ -196,16 +196,16 @@ export const ventasSupabaseAdapter = {
   // Transformar datos locales a formato Supabase
   transformVentaToSupabase(data) {
     return {
-      fecha: data.fecha,
-      tipo: data.tipo,
-      receta_id: data.recetaId,
-      receta_nombre: data.recetaNombre,
-      cantidad: data.cantidad,
-      precio_unitario: data.precioUnitario,
-      subtotal: data.subtotal,
-      metodo_pago: data.metodoPago,
-      cliente: data.cliente,
-      notas: data.notas,
+      fecha: data.fecha || new Date().toISOString(),
+      tipo: data.tipo || 'receta',
+      receta_id: data.recetaId || null,
+      receta_nombre: data.recetaNombre || 'Producto',
+      cantidad: data.cantidad || 1,
+      precio_unitario: data.precioUnitario || 0,
+      subtotal: data.subtotal || 0,
+      metodo_pago: data.metodoPago || 'efectivo',
+      cliente: data.cliente || '',
+      notas: data.notas || '',
     };
   },
 };
