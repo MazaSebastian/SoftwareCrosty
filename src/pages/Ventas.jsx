@@ -10,6 +10,9 @@ import {
   obtenerVentasMes,
   obtenerProductosDisponibles
 } from '../services/ventasService';
+import { useVentasRealtime } from '../services/ventasRealtimeService';
+import { useToast } from '../components/Toast';
+import SyncIndicator from '../components/SyncIndicator';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -312,6 +315,16 @@ const Ventas = () => {
   const [productos, setProductos] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const { showSuccess, showError, showInfo } = useToast();
+  
+  // Hook de sincronización en tiempo real
+  const { 
+    ventas: ventasRealtime, 
+    connectionStatus, 
+    addListener 
+  } = useVentasRealtime();
+  
   const [formData, setFormData] = useState({
     tipo: '',
     recetaId: '',
@@ -327,7 +340,15 @@ const Ventas = () => {
 
   useEffect(() => {
     cargarDatos();
+    setupRealtimeListeners();
   }, []);
+
+  // Sincronizar ventas locales con las de tiempo real
+  useEffect(() => {
+    if (ventasRealtime.length > 0) {
+      setVentas(ventasRealtime);
+    }
+  }, [ventasRealtime]);
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -343,9 +364,53 @@ const Ventas = () => {
       setProductos(productosData);
     } catch (error) {
       console.error('Error cargando datos:', error);
+      showError('Error al cargar los datos de ventas');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Configurar listeners de tiempo real
+  const setupRealtimeListeners = () => {
+    // Listener para nuevas ventas de otros usuarios
+    addListener('nueva_venta', (venta) => {
+      console.log('🆕 Nueva venta recibida:', venta);
+      setVentas(prev => [venta, ...prev]);
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Nueva venta: ${venta.usuarioNombre} vendió ${venta.cantidad} ${venta.producto}`);
+    });
+
+    // Listener para ventas actualizadas
+    addListener('venta_actualizada', ({ nueva, anterior }) => {
+      console.log('🔄 Venta actualizada:', { nueva, anterior });
+      setVentas(prev => prev.map(v => v.id === nueva.id ? nueva : v));
+      showInfo(`Venta actualizada: ${nueva.producto}`);
+    });
+
+    // Listener para ventas eliminadas
+    addListener('venta_eliminada', (venta) => {
+      console.log('🗑️ Venta eliminada:', venta);
+      setVentas(prev => prev.filter(v => v.id !== venta.id));
+      showInfo(`Venta eliminada: ${venta.producto}`);
+    });
+
+    // Listener para cambios de conexión
+    addListener('connection', (status) => {
+      console.log('📡 Estado de conexión:', status);
+      if (status.status === 'connected') {
+        showSuccess('Sincronización activa');
+      } else if (status.status === 'disconnected') {
+        showError('Conexión perdida - Modo offline');
+      } else if (status.status === 'error') {
+        showError('Error de sincronización');
+      }
+    });
+  };
+
+  // Manejar click en notificaciones
+  const handleNotificationClick = () => {
+    setNotificationCount(0);
+    // Aquí podrías abrir un panel de notificaciones
   };
 
   const handleSubmit = async (e) => {
@@ -435,6 +500,13 @@ const Ventas = () => {
 
   return (
     <PageContainer>
+      {/* Indicador de sincronización */}
+      <SyncIndicator 
+        connectionStatus={connectionStatus}
+        notificationCount={notificationCount}
+        onNotificationClick={handleNotificationClick}
+      />
+      
       <Header>
         <div>
           <h1>Ventas</h1>
