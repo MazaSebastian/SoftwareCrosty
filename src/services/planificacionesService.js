@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '../config/supabase';
 
 // Tipos de planificación disponibles
 export const TIPOS_PLANIFICACION = {
