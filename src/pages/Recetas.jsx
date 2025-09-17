@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta, calcularCostoReceta } from '../services/recetasService';
+import { 
+  obtenerRecetas, 
+  crearReceta, 
+  actualizarReceta, 
+  eliminarReceta, 
+  calcularCostoReceta,
+  obtenerRecetasConCostos,
+  escalarReceta,
+  calcularCostoPorUnidad
+} from '../services/recetasService';
 import { obtenerInsumos } from '../services/insumosService';
 
 const PageContainer = styled.div`
@@ -408,6 +417,10 @@ const Recetas = () => {
   const [insumos, setInsumos] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReceta, setSelectedReceta] = useState(null);
+  const [isEscaladoModalOpen, setIsEscaladoModalOpen] = useState(false);
+  const [recetaParaEscalar, setRecetaParaEscalar] = useState(null);
+  const [cantidadEscalado, setCantidadEscalado] = useState('');
+  const [recetaEscalada, setRecetaEscalada] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -428,12 +441,14 @@ const Recetas = () => {
 
   const cargarDatos = async () => {
     try {
-      const [recetasData, insumosData] = await Promise.all([
-        obtenerRecetas(),
+      const [insumosData] = await Promise.all([
         obtenerInsumos()
       ]);
-      setRecetas(recetasData);
       setInsumos(insumosData);
+      
+      // Obtener recetas con costos actualizados
+      const recetasConCostos = await obtenerRecetasConCostos(insumosData);
+      setRecetas(recetasConCostos);
     } catch (error) {
       console.error('Error al cargar datos:', error);
     }
@@ -476,6 +491,32 @@ const Recetas = () => {
       } catch (error) {
         console.error('Error al eliminar receta:', error);
       }
+    }
+  };
+
+  const handleEscalarReceta = (receta) => {
+    setRecetaParaEscalar(receta);
+    setCantidadEscalado('');
+    setRecetaEscalada(null);
+    setIsEscaladoModalOpen(true);
+  };
+
+  const handleCalcularEscalado = async () => {
+    if (!recetaParaEscalar || !cantidadEscalado) return;
+    
+    try {
+      const cantidad = parseFloat(cantidadEscalado);
+      const recetaEscaladaData = await escalarReceta(recetaParaEscalar, cantidad);
+      const costoTotal = await calcularCostoReceta(recetaEscaladaData, insumos);
+      const costoPorUnidad = await calcularCostoPorUnidad(recetaEscaladaData, insumos);
+      
+      setRecetaEscalada({
+        ...recetaEscaladaData,
+        costoTotal,
+        costoPorUnidad
+      });
+    } catch (error) {
+      console.error('Error al escalar receta:', error);
     }
   };
 
