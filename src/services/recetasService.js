@@ -31,23 +31,48 @@ export async function obtenerRecetas() {
 
 // Función para obtener recetas con costos actualizados
 export async function obtenerRecetasConCostos(insumos = []) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  const recetasConCostos = await Promise.all(
-    recetas.map(async (receta) => {
-      const costoTotal = await calcularCostoReceta(receta, insumos);
-      const costoPorUnidad = await calcularCostoPorUnidad(receta, insumos);
-      
-      return {
-        ...receta,
-        costoTotal,
-        costoPorUnidad,
-        costoPorUnidadFormateado: `$${costoPorUnidad.toFixed(2)} por ${receta.unidadBase}`
-      };
-    })
-  );
-  
-  return recetasConCostos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  try {
+    console.log('🔧 obtenerRecetasConCostos iniciado');
+    
+    // Obtener recetas desde Supabase primero
+    const recetasData = await obtenerRecetas();
+    console.log('🔧 Recetas obtenidas:', recetasData);
+    
+    const recetasConCostos = await Promise.all(
+      recetasData.map(async (receta) => {
+        const costoTotal = await calcularCostoReceta(receta, insumos);
+        const costoPorUnidad = await calcularCostoPorUnidad(receta, insumos);
+        
+        return {
+          ...receta,
+          costoTotal,
+          costoPorUnidad,
+          costoPorUnidadFormateado: `$${costoPorUnidad.toFixed(2)} por ${receta.unidad_base || receta.unidadBase || 'unidad'}`
+        };
+      })
+    );
+    
+    console.log('🔧 Recetas con costos calculados:', recetasConCostos);
+    return recetasConCostos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  } catch (error) {
+    console.error('❌ Error en obtenerRecetasConCostos:', error);
+    // Fallback a datos locales
+    const recetasConCostos = await Promise.all(
+      recetas.map(async (receta) => {
+        const costoTotal = await calcularCostoReceta(receta, insumos);
+        const costoPorUnidad = await calcularCostoPorUnidad(receta, insumos);
+        
+        return {
+          ...receta,
+          costoTotal,
+          costoPorUnidad,
+          costoPorUnidadFormateado: `$${costoPorUnidad.toFixed(2)} por ${receta.unidadBase}`
+        };
+      })
+    );
+    
+    return recetasConCostos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
 }
 
 export async function obtenerRecetaPorId(id) {
@@ -240,7 +265,8 @@ export async function calcularCostoPorUnidad(receta, insumos = []) {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   const costoTotal = await calcularCostoReceta(receta, insumos);
-  const costoPorUnidad = costoTotal / receta.rendimiento;
+  const rendimiento = receta.rendimiento || receta.cantidad_base || 1;
+  const costoPorUnidad = costoTotal / rendimiento;
   
   return costoPorUnidad;
 }
