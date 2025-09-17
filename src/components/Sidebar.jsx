@@ -34,6 +34,22 @@ const NavMenu = styled.nav`
   padding: 1rem 0;
 `;
 
+const CategorySection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const CategoryTitle = styled.div`
+  padding: 0.5rem 1.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #722F37;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(114, 47, 55, 0.1);
+  border-left: 3px solid #722F37;
+  margin-bottom: 0.5rem;
+`;
+
 const NavItem = styled.button`
   width: 100%;
   background: transparent;
@@ -75,6 +91,16 @@ const NavItem = styled.button`
 `;
 
 const Sidebar = ({ sections, currentSection, onSectionChange }) => {
+  // Agrupar secciones por categoría
+  const groupedSections = sections.reduce((acc, section) => {
+    const category = section.category || 'Otros';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(section);
+    return acc;
+  }, {});
+
   return (
     <SidebarContainer>
       <SidebarHeader>
@@ -82,15 +108,20 @@ const Sidebar = ({ sections, currentSection, onSectionChange }) => {
       </SidebarHeader>
       
       <NavMenu>
-        {sections.map(section => (
-          <NavItem
-            key={section.id}
-            className={currentSection === section.id ? 'active' : ''}
-            onClick={() => onSectionChange(section.id)}
-          >
-            <span className="nav-icon">{section.icon}</span>
-            <span className="nav-text">{section.name}</span>
-          </NavItem>
+        {Object.entries(groupedSections).map(([category, categorySections]) => (
+          <CategorySection key={category}>
+            <CategoryTitle>{category}</CategoryTitle>
+            {categorySections.map(section => (
+              <NavItem
+                key={section.id}
+                className={currentSection === section.id ? 'active' : ''}
+                onClick={() => onSectionChange(section.id)}
+              >
+                <span className="nav-icon">{section.icon}</span>
+                <span className="nav-text">{section.name}</span>
+              </NavItem>
+            ))}
+          </CategorySection>
         ))}
       </NavMenu>
     </SidebarContainer>

@@ -42,17 +42,26 @@ function App() {
   }, []);
 
   const sections = [
-    { id: 'dashboard', name: 'Dashboard', icon: '📊' },
-    { id: 'caja', name: 'Caja Diaria', icon: '💰' },
-    { id: 'insumos', name: 'Insumos', icon: '🥬' },
-    { id: 'recetas', name: 'Recetas', icon: '🍽️' },
-    { id: 'stock', name: 'Control de Stock', icon: '📦' },
-    { id: 'ventas', name: 'Ventas', icon: '🛒' },
-    { id: 'reportes', name: 'Reportes', icon: '📈' },
-    { id: 'usuarios', name: 'Usuarios', icon: '👥' },
-    { id: 'automatizacion', name: 'Automatización', icon: '🤖' },
-    { id: 'configuracion', name: 'Configuración', icon: '⚙️' },
-    { id: 'supabase', name: 'Supabase', icon: '☁️' }
+    // 🏠 HOME
+    { id: 'dashboard', name: 'Dashboard', icon: '📊', category: 'Home' },
+    
+    // 💰 FINANZAS
+    { id: 'caja', name: 'Caja Diaria', icon: '💰', category: 'Finanzas' },
+    { id: 'ventas', name: 'Ventas', icon: '🛒', category: 'Finanzas' },
+    
+    // 📦 PRODUCTOS
+    { id: 'insumos', name: 'Insumos', icon: '🥬', category: 'Productos' },
+    { id: 'recetas', name: 'Recetas', icon: '🍽️', category: 'Productos' },
+    { id: 'stock', name: 'Control de Stock', icon: '📦', category: 'Productos' },
+    
+    // 📈 ANÁLISIS
+    { id: 'reportes', name: 'Reportes', icon: '📈', category: 'Análisis' },
+    { id: 'automatizacion', name: 'Automatización', icon: '🤖', category: 'Análisis' },
+    
+    // ⚙️ SISTEMA
+    { id: 'usuarios', name: 'Usuarios', icon: '👥', category: 'Sistema' },
+    { id: 'supabase', name: 'Supabase', icon: '☁️', category: 'Sistema' },
+    { id: 'configuracion', name: 'Configuración', icon: '⚙️', category: 'Sistema' }
   ];
 
   const renderContent = () => {
