@@ -646,14 +646,17 @@ const Recetas = () => {
       }).format(amount);
     }
     
-    // Para valores grandes, truncar a miles para evitar confusión con millones
+    // Para valores grandes, truncar a miles y quitar ceros innecesarios
     const truncatedAmount = Math.floor(amount / 1000) * 1000;
-    return new Intl.NumberFormat('es-AR', {
+    const formatted = new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(truncatedAmount);
+    
+    // Quitar los ceros innecesarios al final
+    return formatted.replace(/\.000$/, '');
   };
 
   // Calcular estadísticas
