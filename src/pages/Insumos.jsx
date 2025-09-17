@@ -297,12 +297,25 @@ const FormGroup = styled.div`
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     font-size: 1rem;
+    background-color: white;
+    color: #374151;
+    min-height: 48px;
     
     &:focus {
       outline: none;
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
+  }
+  
+  select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
   }
   
   textarea {
@@ -699,10 +712,15 @@ const Insumos = () => {
                 </select>
               </FormGroup>
               <FormGroup>
-                <label>Unidad</label>
+                <label>Unidad de Medida *</label>
                 <select
                   value={formData.unidad}
                   onChange={(e) => setFormData({ ...formData, unidad: e.target.value })}
+                  required
+                  style={{
+                    border: '2px solid #722F37',
+                    backgroundColor: '#f9fafb'
+                  }}
                 >
                   <option value="kg">Kilogramo (kg)</option>
                   <option value="g">Gramo (g)</option>
@@ -711,6 +729,9 @@ const Insumos = () => {
                   <option value="unidad">Unidad</option>
                   <option value="paquete">Paquete</option>
                 </select>
+                <small style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                  Selecciona la unidad de medida del insumo
+                </small>
               </FormGroup>
             </FormRow>
 
