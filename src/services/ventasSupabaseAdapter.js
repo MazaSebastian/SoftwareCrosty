@@ -176,18 +176,18 @@ export const ventasSupabaseAdapter = {
     return {
       id: data.id,
       fecha: data.fecha,
-      tipo: data.tipo,
-      recetaId: data.receta_id,
-      recetaNombre: data.receta_nombre,
+      tipo: data.tipo || 'receta',
+      recetaId: data.receta_id || null,
+      recetaNombre: data.receta_nombre || data.producto || 'Producto',
       cantidad: data.cantidad,
       precioUnitario: parseFloat(data.precio_unitario),
       subtotal: parseFloat(data.subtotal),
       metodoPago: data.metodo_pago,
-      cliente: data.cliente,
-      notas: data.notas,
+      cliente: data.cliente || '',
+      notas: data.notas || '',
       usuarioId: data.usuario_id,
-      usuarioNombre: data.usuario_nombre,
-      activa: data.activa,
+      usuarioNombre: data.usuario_nombre || 'Usuario',
+      activa: data.activa !== false,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
@@ -198,14 +198,16 @@ export const ventasSupabaseAdapter = {
     return {
       fecha: data.fecha || new Date().toISOString(),
       tipo: data.tipo || 'receta',
-      receta_id: data.recetaId || null,
-      receta_nombre: data.recetaNombre || 'Producto',
+      producto: data.recetaNombre || 'Producto', // Usar 'producto' en lugar de 'receta_nombre'
       cantidad: data.cantidad || 1,
       precio_unitario: data.precioUnitario || 0,
       subtotal: data.subtotal || 0,
       metodo_pago: data.metodoPago || 'efectivo',
-      cliente: data.cliente || '',
-      notas: data.notas || '',
+      // No incluir campos que no existen en la tabla actual
+      // cliente: data.cliente || '',
+      // notas: data.notas || '',
+      // receta_id: data.recetaId || null,
+      // receta_nombre: data.recetaNombre || 'Producto',
     };
   },
 };
