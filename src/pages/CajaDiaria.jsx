@@ -13,6 +13,13 @@ import {
 } from '../services/cajaService';
 import { useApp } from '../context/AppContext';
 import UsuarioSelector from '../components/UsuarioSelector';
+import { 
+  FormContainer, 
+  FormGroup, 
+  FormRow, 
+  FormActions, 
+  FormButton 
+} from '../components/FormResponsive';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -594,7 +601,7 @@ const CajaDiaria = () => {
       <Modal isOpen={isModalOpen}>
         <ModalContent>
           <h2>Nuevo Movimiento</h2>
-          <Form onSubmit={handleSubmit}>
+          <FormContainer onSubmit={handleSubmit}>
             <FormRow>
               <FormGroup>
                 <label>Tipo de Movimiento</label>
@@ -668,19 +675,19 @@ const CajaDiaria = () => {
               />
             </FormGroup>
 
-            <ModalActions>
-              <Button
+            <FormActions>
+              <FormButton
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                style={{ background: '#6b7280' }}
+                className="secondary"
               >
                 Cancelar
-              </Button>
-              <Button type="submit">
+              </FormButton>
+              <FormButton type="submit" className="primary">
                 Guardar Movimiento
-              </Button>
-            </ModalActions>
-          </Form>
+              </FormButton>
+            </FormActions>
+          </FormContainer>
         </ModalContent>
       </Modal>
     </PageContainer>

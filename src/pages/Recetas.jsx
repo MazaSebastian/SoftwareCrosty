@@ -11,6 +11,14 @@ import {
   calcularCostoPorUnidad
 } from '../services/recetasService';
 import { obtenerInsumos } from '../services/insumosService';
+import { 
+  FormContainer, 
+  FormGroup, 
+  FormRow, 
+  FormRowThree,
+  FormActions, 
+  FormButton 
+} from '../components/FormResponsive';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -864,7 +872,7 @@ const Recetas = () => {
       <Modal isOpen={isModalOpen}>
         <ModalContent>
           <h2>{selectedReceta ? 'Editar Receta' : 'Nueva Receta'}</h2>
-          <Form onSubmit={handleSubmit}>
+          <FormContainer onSubmit={handleSubmit}>
             <FormGroup>
               <label>Nombre de la Receta *</label>
               <input
@@ -1005,8 +1013,8 @@ const Recetas = () => {
               ))}
             </IngredientesSection>
 
-            <ModalActions>
-              <Button
+            <FormActions>
+              <FormButton
                 type="button"
                 onClick={() => {
                   setIsModalOpen(false);
@@ -1015,12 +1023,12 @@ const Recetas = () => {
                 className="secondary"
               >
                 Cancelar
-              </Button>
-              <Button type="submit">
+              </FormButton>
+              <FormButton type="submit" className="primary">
                 {selectedReceta ? 'Actualizar' : 'Crear'} Receta
-              </Button>
-            </ModalActions>
-          </Form>
+              </FormButton>
+            </FormActions>
+          </FormContainer>
         </ModalContent>
       </Modal>
     </PageContainer>

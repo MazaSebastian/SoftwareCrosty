@@ -5,6 +5,13 @@ import { SkeletonList } from '../components/SkeletonLoader';
 import { LoadingButton } from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
 import { ResponsiveContainer, StatsGrid, CardsGrid, FormGrid, ResponsiveButton } from '../components/GridResponsive';
+import { 
+  FormContainer, 
+  FormGroup, 
+  FormRow, 
+  FormActions, 
+  FormButton 
+} from '../components/FormResponsive';
 
 const PageContainer = styled(ResponsiveContainer)`
   background: #FFFFFF;
@@ -695,7 +702,7 @@ const Insumos = () => {
       <Modal isOpen={isModalOpen}>
         <ModalContent>
           <h2>{selectedInsumo ? 'Editar Insumo' : 'Nuevo Insumo'}</h2>
-          <Form onSubmit={handleSubmit}>
+          <FormContainer onSubmit={handleSubmit}>
             <FormGroup>
               <label>Nombre del Insumo *</label>
               <input
@@ -729,10 +736,6 @@ const Insumos = () => {
                   value={formData.unidad}
                   onChange={(e) => setFormData({ ...formData, unidad: e.target.value })}
                   required
-                  style={{
-                    border: '2px solid #722F37',
-                    backgroundColor: '#f9fafb'
-                  }}
                 >
                   <option value="kg">Kilogramo (kg)</option>
                   <option value="g">Gramo (g)</option>
@@ -741,7 +744,7 @@ const Insumos = () => {
                   <option value="unidad">Unidad</option>
                   <option value="paquete">Paquete</option>
                 </select>
-                <small style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                <small>
                   Selecciona la unidad de medida del insumo
                 </small>
               </FormGroup>
@@ -801,8 +804,8 @@ const Insumos = () => {
               />
             </FormGroup>
 
-            <ModalActions>
-              <Button
+            <FormActions>
+              <FormButton
                 type="button"
                 onClick={() => {
                   setIsModalOpen(false);
@@ -820,16 +823,16 @@ const Insumos = () => {
                 className="secondary"
               >
                 Cancelar
-              </Button>
-              <LoadingButton 
-                type="submit" 
-                loading={saving}
+              </FormButton>
+              <FormButton
+                type="submit"
                 disabled={saving}
+                className="primary"
               >
-                {selectedInsumo ? 'Actualizar' : 'Crear'} Insumo
-              </LoadingButton>
-            </ModalActions>
-          </Form>
+                {saving ? 'Guardando...' : (selectedInsumo ? 'Actualizar' : 'Crear') + ' Insumo'}
+              </FormButton>
+            </FormActions>
+          </FormContainer>
         </ModalContent>
       </Modal>
 
@@ -837,7 +840,7 @@ const Insumos = () => {
       <Modal isOpen={isPrecioModalOpen}>
         <ModalContent>
           <h2>Actualizar Precio - {selectedInsumo?.nombre}</h2>
-          <Form onSubmit={handlePrecioSubmit}>
+          <FormContainer onSubmit={handlePrecioSubmit}>
             <FormRow>
               <FormGroup>
                 <label>Nuevo Precio *</label>
@@ -881,8 +884,8 @@ const Insumos = () => {
               />
             </FormGroup>
 
-            <ModalActions>
-              <Button
+            <FormActions>
+              <FormButton
                 type="button"
                 onClick={() => {
                   setIsPrecioModalOpen(false);
@@ -897,12 +900,12 @@ const Insumos = () => {
                 className="secondary"
               >
                 Cancelar
-              </Button>
-              <Button type="submit">
+              </FormButton>
+              <FormButton type="submit" className="primary">
                 Actualizar Precio
-              </Button>
-            </ModalActions>
-          </Form>
+              </FormButton>
+            </FormActions>
+          </FormContainer>
         </ModalContent>
       </Modal>
     </PageContainer>
