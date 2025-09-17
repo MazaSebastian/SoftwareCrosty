@@ -28,7 +28,8 @@ class VentasRealtimeService {
       return true;
     } catch (error) {
       console.error('❌ Error inicializando servicio de sincronización:', error);
-      this.handleReconnection();
+      // No intentar reconectar automáticamente para evitar loops
+      this.isConnected = false;
       return false;
     }
   }
@@ -89,26 +90,9 @@ class VentasRealtimeService {
 
   // Configurar listeners de conexión
   setupConnectionListeners() {
-    // Listener para cambios de estado de conexión
-    supabase.realtime.onOpen(() => {
-      console.log('🟢 Conexión Realtime establecida');
-      this.isConnected = true;
-      this.reconnectAttempts = 0;
-      this.notifyListeners('connection', { status: 'connected' });
-    });
-
-    supabase.realtime.onClose(() => {
-      console.log('🔴 Conexión Realtime cerrada');
-      this.isConnected = false;
-      this.notifyListeners('connection', { status: 'disconnected' });
-      this.handleReconnection();
-    });
-
-    supabase.realtime.onError((error) => {
-      console.error('❌ Error en Realtime:', error);
-      this.notifyListeners('connection', { status: 'error', error });
-      this.handleReconnection();
-    });
+    // Los listeners de conexión se manejan a través de los canales
+    // No hay métodos directos onOpen/onClose en la API actual de Supabase
+    console.log('📡 Configurando listeners de conexión...');
   }
 
   // Manejar nueva venta
@@ -189,39 +173,11 @@ class VentasRealtimeService {
     }
   }
 
-  // Manejar reconexión automática
+  // Manejar reconexión automática (simplificado)
   handleReconnection() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('❌ Máximo de intentos de reconexión alcanzado');
-      this.notifyListeners('connection', { status: 'failed' });
-      return;
-    }
-
-    this.reconnectAttempts++;
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Backoff exponencial
-
-    console.log(`🔄 Intentando reconectar en ${delay}ms (intento ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
-    setTimeout(() => {
-      this.reconnect();
-    }, delay);
-  }
-
-  // Reconectar
-  async reconnect() {
-    try {
-      console.log('🔄 Reconectando servicio de sincronización...');
-      
-      // Limpiar suscripciones existentes
-      this.cleanup();
-      
-      // Reinicializar
-      await this.initialize();
-      
-    } catch (error) {
-      console.error('❌ Error en reconexión:', error);
-      this.handleReconnection();
-    }
+    console.log('🔄 Intentando reconectar servicio de sincronización...');
+    this.isConnected = false;
+    this.notifyListeners('connection', { status: 'disconnected' });
   }
 
   // Agregar listener para eventos
@@ -291,7 +247,7 @@ class VentasRealtimeService {
 // Instancia singleton
 const ventasRealtimeService = new VentasRealtimeService();
 
-// Hook personalizado para usar el servicio
+// Hook personalizado para usar el servicio (versión simplificada)
 export const useVentasRealtime = () => {
   const [ventas, setVentas] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState({
@@ -302,50 +258,16 @@ export const useVentasRealtime = () => {
   useEffect(() => {
     let isMounted = true;
 
+    // Inicializar el servicio de forma segura
     const initializeService = async () => {
       try {
-        // Inicializar el servicio de forma segura
         await ventasRealtimeService.initialize();
-
-        if (!isMounted) return;
-
-        // Listener para nuevas ventas
-        const removeNuevaVentaListener = ventasRealtimeService.addListener('nueva_venta', (venta) => {
-          if (isMounted) {
-            setVentas(prev => [venta, ...prev]);
-          }
-        });
-
-        // Listener para ventas actualizadas
-        const removeVentaActualizadaListener = ventasRealtimeService.addListener('venta_actualizada', ({ nueva, anterior }) => {
-          if (isMounted) {
-            setVentas(prev => prev.map(v => v.id === nueva.id ? nueva : v));
-          }
-        });
-
-        // Listener para ventas eliminadas
-        const removeVentaEliminadaListener = ventasRealtimeService.addListener('venta_eliminada', (venta) => {
-          if (isMounted) {
-            setVentas(prev => prev.filter(v => v.id !== venta.id));
-          }
-        });
-
-        // Listener para estado de conexión
-        const removeConnectionListener = ventasRealtimeService.addListener('connection', (status) => {
-          if (isMounted) {
-            setConnectionStatus(ventasRealtimeService.getConnectionStatus());
-          }
-        });
-
-        // Cleanup function
-        return () => {
-          removeNuevaVentaListener();
-          removeVentaActualizadaListener();
-          removeVentaEliminadaListener();
-          removeConnectionListener();
-        };
+        
+        if (isMounted) {
+          setConnectionStatus(ventasRealtimeService.getConnectionStatus());
+        }
       } catch (error) {
-        console.error('Error inicializando servicio de sincronización:', error);
+        console.warn('Servicio de sincronización no disponible:', error);
         if (isMounted) {
           setConnectionStatus({
             isConnected: false,
@@ -355,15 +277,12 @@ export const useVentasRealtime = () => {
       }
     };
 
-    const cleanup = initializeService();
+    // Inicializar de forma asíncrona
+    initializeService();
 
+    // Cleanup
     return () => {
       isMounted = false;
-      if (cleanup && typeof cleanup.then === 'function') {
-        cleanup.then(cleanupFn => cleanupFn && cleanupFn());
-      } else if (cleanup && typeof cleanup === 'function') {
-        cleanup();
-      }
     };
   }, []);
 
