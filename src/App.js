@@ -22,6 +22,7 @@ const GestionUsuarios = lazy(() => import('./pages/GestionUsuarios'));
 const Configuracion = lazy(() => import('./pages/Configuracion'));
 const ConfiguracionSupabase = lazy(() => import('./pages/ConfiguracionSupabase'));
 const AutomatizacionPrecios = lazy(() => import('./pages/AutomatizacionPrecios'));
+const Planificaciones = lazy(() => import('./pages/Planificaciones'));
 
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
@@ -73,6 +74,7 @@ function App() {
     { id: 'insumos', name: 'Insumos', icon: '🥬', category: 'Productos' },
     { id: 'recetas', name: 'Recetas', icon: '🍽️', category: 'Productos' },
     { id: 'stock', name: 'Control de Stock', icon: '📦', category: 'Productos' },
+    { id: 'planificaciones', name: 'Planificaciones', icon: '📅', category: 'Productos' },
     
     // 📈 ANÁLISIS
     { id: 'reportes', name: 'Reportes', icon: '📈', category: 'Análisis' },
@@ -96,6 +98,8 @@ function App() {
         return <Recetas />;
       case 'stock':
         return <Stock />;
+      case 'planificaciones':
+        return <Planificaciones />;
       case 'ventas':
         return <Ventas />;
       case 'reportes':
