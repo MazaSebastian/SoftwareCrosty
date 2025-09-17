@@ -20,6 +20,12 @@
   align-items: center;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .header-content h1 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -39,6 +45,22 @@
   flex: 1;
   overflow: hidden;
   margin-left: 250px;
+  transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .app-body {
+    margin-left: 0;
+  }
+  
+  .header-content h1 {
+    font-size: 1.4rem;
+  }
+  
+  .header-info {
+    font-size: 0.8rem;
+  }
 }
 
 .nav-list {

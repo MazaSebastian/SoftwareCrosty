@@ -3,6 +3,7 @@ import { AppProvider } from './context/AppContext';
 import backupService from './services/backupService';
 import automatizacionPreciosService from './services/automatizacionPreciosService';
 import Sidebar from './components/Sidebar';
+import HamburgerMenuButton from './components/HamburgerButton';
 import { SectionLoading } from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import LogoutButton from './components/LogoutButton';
@@ -23,6 +24,24 @@ const AutomatizacionPrecios = lazy(() => import('./pages/AutomatizacionPrecios')
 
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Funciones para manejar el menú móvil
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+  // Cerrar menú al cambiar de sección en móviles
+  const handleSectionChange = (sectionId) => {
+    setCurrentSection(sectionId);
+    if (window.innerWidth <= 768) {
+      closeSidebar();
+    }
+  };
 
   // Inicializar sistemas automáticos
   useEffect(() => {
@@ -99,7 +118,13 @@ function App() {
         <div className="App">
           <header className="app-header">
             <div className="header-content">
-              <h1>🍕 CROSTY - Alimentos Congelados al Vacío</h1>
+              <div className="header-left">
+                <HamburgerMenuButton 
+                  isOpen={isSidebarOpen} 
+                  onClick={toggleSidebar} 
+                />
+                <h1>🍕 CROSTY - Alimentos Congelados al Vacío</h1>
+              </div>
               <div className="header-info">
                 <span>Versión 1.0.0</span>
                 <LogoutButton />
@@ -111,7 +136,9 @@ function App() {
             <Sidebar 
               sections={sections}
               currentSection={currentSection}
-              onSectionChange={setCurrentSection}
+              onSectionChange={handleSectionChange}
+              isOpen={isSidebarOpen}
+              onClose={closeSidebar}
             />
 
             <main className="main-content">
