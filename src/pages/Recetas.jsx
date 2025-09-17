@@ -636,7 +636,17 @@ const Recetas = () => {
   };
 
   const formatCurrency = (amount) => {
-    // Mostrar solo los primeros 4 dígitos para evitar confusión con millones
+    // Para valores pequeños (menos de 1000), mostrar el valor completo
+    if (amount < 1000) {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    
+    // Para valores grandes, truncar a miles para evitar confusión con millones
     const truncatedAmount = Math.floor(amount / 1000) * 1000;
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
