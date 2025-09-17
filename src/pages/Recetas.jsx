@@ -243,7 +243,7 @@ const RecetasList = styled.div`
     
     .receta-details {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 1rem;
       margin-bottom: 0.75rem;
       
@@ -587,7 +587,9 @@ const Recetas = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'ARS'
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
@@ -687,10 +689,6 @@ const Recetas = () => {
                     <div className="detail-item">
                       <div className="label">Costo Total</div>
                       <div className="value">{formatCurrency(receta.costoTotal || 0)}</div>
-                    </div>
-                    <div className="detail-item">
-                      <div className="label">Costo por {receta.unidadBase}</div>
-                      <div className="value">{formatCurrency(receta.costoPorUnidad || 0)}</div>
                     </div>
                   </div>
                   
