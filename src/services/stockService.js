@@ -1,147 +1,123 @@
-// Datos mock para desarrollo - Iniciando con datos limpios
-let productosStock = [];
+import { stockSupabaseAdapter } from './stockSupabaseAdapter';
 
-export async function obtenerProductosStock() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return [...productosStock].sort((a, b) => a.nombre.localeCompare(b.nombre));
+// Usar Supabase para productos de stock
+export async function obtenerProductosStock(filtros) {
+  try {
+    return await stockSupabaseAdapter.obtenerProductosStock(filtros);
+  } catch (error) {
+    console.error('Error obteniendo productos de stock:', error);
+    // Fallback a datos vacíos si hay error
+    return [];
+  }
 }
 
 export async function obtenerProductoPorId(id) {
-  await new Promise(resolve => setTimeout(resolve, 50));
-  return productosStock.find(producto => producto.id === id);
+  try {
+    const productos = await stockSupabaseAdapter.obtenerProductosStock();
+    return productos.find(producto => producto.id === id);
+  } catch (error) {
+    console.error('Error obteniendo producto por ID:', error);
+    return null;
+  }
 }
 
 export async function crearProducto(producto) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const nuevoProducto = {
-    ...producto,
-    id: Date.now().toString(),
-    cantidad: producto.cantidad || 0,
-    stockMinimo: producto.stockMinimo || 10,
-    activo: true,
-    createdAt: new Date().toISOString()
-  };
-  
-  productosStock.unshift(nuevoProducto);
-  return nuevoProducto;
+  try {
+    return await stockSupabaseAdapter.crearProductoStock(producto);
+  } catch (error) {
+    console.error('Error creando producto:', error);
+    throw error;
+  }
 }
 
 export async function actualizarProducto(id, datosActualizacion) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const indice = productosStock.findIndex(producto => producto.id === id);
-  if (indice === -1) {
-    throw new Error('Producto no encontrado');
+  try {
+    return await stockSupabaseAdapter.actualizarProductoStock(id, datosActualizacion);
+  } catch (error) {
+    console.error('Error actualizando producto:', error);
+    throw error;
   }
-  
-  productosStock[indice] = {
-    ...productosStock[indice],
-    ...datosActualizacion
-  };
-  
-  return productosStock[indice];
 }
 
 export async function eliminarProducto(id) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const indice = productosStock.findIndex(producto => producto.id === id);
-  if (indice === -1) {
-    throw new Error('Producto no encontrado');
+  try {
+    return await stockSupabaseAdapter.eliminarProductoStock(id);
+  } catch (error) {
+    console.error('Error eliminando producto:', error);
+    throw error;
   }
-  
-  productosStock[indice].activo = false;
-  return productosStock[indice];
 }
 
 export async function ajustarStock(id, cantidad, tipo = 'entrada', motivo = '') {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const producto = await obtenerProductoPorId(id);
-  if (!producto) {
-    throw new Error('Producto no encontrado');
-  }
-  
-  const cantidadNumerica = parseInt(cantidad);
-  let nuevoStock;
-  
-  if (tipo === 'entrada') {
-    nuevoStock = producto.stockActual + cantidadNumerica;
-  } else if (tipo === 'salida') {
-    nuevoStock = producto.stockActual - cantidadNumerica;
-    if (nuevoStock < 0) {
-      throw new Error('Stock insuficiente');
+  try {
+    const producto = await obtenerProductoPorId(id);
+    if (!producto) {
+      throw new Error('Producto no encontrado');
     }
-  } else {
-    nuevoStock = cantidadNumerica;
+    
+    const cantidadNumerica = parseInt(cantidad);
+    let nuevaCantidad;
+    
+    if (tipo === 'entrada') {
+      nuevaCantidad = producto.cantidad + cantidadNumerica;
+    } else if (tipo === 'salida') {
+      nuevaCantidad = producto.cantidad - cantidadNumerica;
+      if (nuevaCantidad < 0) {
+        throw new Error('Stock insuficiente');
+      }
+    } else {
+      nuevaCantidad = cantidadNumerica;
+    }
+    
+    return await stockSupabaseAdapter.actualizarProductoStock(id, { cantidad: nuevaCantidad });
+  } catch (error) {
+    console.error('Error ajustando stock:', error);
+    throw error;
   }
-  
-  productosStock[productosStock.findIndex(p => p.id === id)].stockActual = nuevoStock;
-  
-  if (tipo === 'entrada') {
-    productosStock[productosStock.findIndex(p => p.id === id)].fechaUltimaEntrada = new Date().toISOString();
-  } else if (tipo === 'salida') {
-    productosStock[productosStock.findIndex(p => p.id === id)].fechaUltimaSalida = new Date().toISOString();
-  }
-  
-  return productosStock[productosStock.findIndex(p => p.id === id)];
 }
 
 export async function obtenerProductosBajoStock() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  return productosStock.filter(producto => 
-    producto.activo && producto.cantidad <= producto.stockMinimo
-  );
+  try {
+    return await stockSupabaseAdapter.obtenerProductosStockBajo();
+  } catch (error) {
+    console.error('Error obteniendo productos con stock bajo:', error);
+    return [];
+  }
 }
 
 export async function obtenerProductosPorCategoria(categoria) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return productosStock.filter(producto => producto.categoria === categoria && producto.activo);
+  try {
+    return await stockSupabaseAdapter.obtenerProductosPorCategoria(categoria);
+  } catch (error) {
+    console.error('Error obteniendo productos por categoría:', error);
+    return [];
+  }
 }
 
 export async function buscarProductos(termino) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  const terminoLimpio = termino.toLowerCase();
-  return productosStock.filter(producto => 
-    producto.nombre.toLowerCase().includes(terminoLimpio) ||
-    producto.categoria.toLowerCase().includes(terminoLimpio) ||
-    producto.ubicacion.toLowerCase().includes(terminoLimpio)
-  );
+  try {
+    return await stockSupabaseAdapter.buscarProductos(termino);
+  } catch (error) {
+    console.error('Error buscando productos:', error);
+    return [];
+  }
 }
 
 export async function obtenerEstadisticasStock() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  const totalProductos = productosStock.length;
-  const productosActivos = productosStock.filter(p => p.activo).length;
-  const productosBajoStock = productosStock.filter(p => p.activo && p.stockActual <= p.stockMinimo).length;
-  const categorias = [...new Set(productosStock.map(p => p.categoria))];
-  
-  const totalValorStock = productosStock.reduce((total, producto) => {
-    return total + (producto.stockActual * (producto.costoUnitario || 0));
-  }, 0);
-  
-  const totalValorVenta = productosStock.reduce((total, producto) => {
-    return total + (producto.stockActual * (producto.precioVenta || 0));
-  }, 0);
-  
-  return {
-    totalProductos,
-    productosActivos,
-    productosBajoStock,
-    categorias: categorias.length,
-    totalValorStock,
-    totalValorVenta,
-    potencialGanancia: totalValorVenta - totalValorStock
-  };
+  try {
+    return await stockSupabaseAdapter.obtenerEstadisticasStock();
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de stock:', error);
+    return {
+      totalProductos: 0,
+      productosStockBajo: 0,
+      categorias: 0,
+      productosPorCategoria: []
+    };
+  }
 }
 
 export async function obtenerMovimientosStock(productoId = null) {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
   // En un sistema real, esto vendría de una tabla de movimientos
   // Por ahora retornamos un array vacío
   return [];
@@ -149,28 +125,39 @@ export async function obtenerMovimientosStock(productoId = null) {
 
 // Funciones adicionales requeridas por Stock.jsx
 export async function obtenerMovimientosRecientes() {
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // En un sistema real, esto vendría de una tabla de movimientos
+  // Por ahora retornamos un array vacío
   return [];
 }
 
 export async function obtenerProductosStockBajo() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return productosStock.filter(producto => 
-    producto.activo && producto.cantidad <= producto.stockMinimo
-  );
+  try {
+    return await stockSupabaseAdapter.obtenerProductosStockBajo();
+  } catch (error) {
+    console.error('Error obteniendo productos con stock bajo:', error);
+    return [];
+  }
 }
 
 export async function crearProductoStock(producto) {
-  return await crearProducto(producto);
+  try {
+    return await stockSupabaseAdapter.crearProductoStock(producto);
+  } catch (error) {
+    console.error('Error creando producto de stock:', error);
+    throw error;
+  }
 }
 
 export async function actualizarProductoStock(id, datosActualizacion) {
-  return await actualizarProducto(id, datosActualizacion);
+  try {
+    return await stockSupabaseAdapter.actualizarProductoStock(id, datosActualizacion);
+  } catch (error) {
+    console.error('Error actualizando producto de stock:', error);
+    throw error;
+  }
 }
 
 export async function registrarMovimientoStock(movimiento) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
   // En un sistema real, esto registraría el movimiento en una tabla
   // Por ahora solo retornamos el movimiento
   return {
@@ -181,5 +168,10 @@ export async function registrarMovimientoStock(movimiento) {
 }
 
 export async function eliminarProductoStock(id) {
-  return await eliminarProducto(id);
+  try {
+    return await stockSupabaseAdapter.eliminarProductoStock(id);
+  } catch (error) {
+    console.error('Error eliminando producto de stock:', error);
+    throw error;
+  }
 }

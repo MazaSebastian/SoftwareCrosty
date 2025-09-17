@@ -32,6 +32,7 @@ export const TABLES = {
   RECETAS: 'recetas',
   VENTAS: 'ventas',
   STOCK_PRODUCTOS: 'stock_productos',
+  PRODUCTOS_STOCK: 'productos_stock',
   BACKUPS: 'backups',
   CONFIGURACION: 'configuracion',
   AUTOMATIZACION_PRECIOS: 'automatizacion_precios'
