@@ -86,5 +86,28 @@ const LoadingButton = ({ children, loading, ...props }) => {
   );
 };
 
-export { LoadingSpinner, LoadingButton, ButtonSpinner };
+const SectionLoading = ({ text = 'Cargando...' }) => {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      padding: '4rem 2rem',
+      minHeight: '200px'
+    }}>
+      <LoadingSpinner size="large" />
+      <p style={{ 
+        marginTop: '1rem', 
+        color: '#722F37', 
+        fontSize: '1.1rem',
+        fontWeight: '500'
+      }}>
+        {text}
+      </p>
+    </div>
+  );
+};
+
+export { LoadingSpinner, LoadingButton, ButtonSpinner, SectionLoading };
 export default LoadingSpinner;
