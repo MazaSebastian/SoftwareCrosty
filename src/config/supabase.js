@@ -33,6 +33,9 @@ export const TABLES = {
   VENTAS: 'ventas',
   STOCK_PRODUCTOS: 'stock_productos',
   PRODUCTOS_STOCK: 'productos_stock',
+  PLANIFICACIONES: 'planificaciones',
+  PLANIFICACIONES_TAREAS: 'planificaciones_tareas',
+  PLANIFICACIONES_TEMPLATES: 'planificaciones_templates',
   BACKUPS: 'backups',
   CONFIGURACION: 'configuracion',
   AUTOMATIZACION_PRECIOS: 'automatizacion_precios'
@@ -320,6 +323,27 @@ export const realtimeConfig = {
   // Configuración para stock
   STOCK: {
     table: TABLES.STOCK_PRODUCTOS,
+    events: ['INSERT', 'UPDATE', 'DELETE'],
+    filter: null
+  },
+  
+  // Configuración para planificaciones
+  PLANIFICACIONES: {
+    table: TABLES.PLANIFICACIONES,
+    events: ['INSERT', 'UPDATE', 'DELETE'],
+    filter: null
+  },
+  
+  // Configuración para tareas de planificaciones
+  PLANIFICACIONES_TAREAS: {
+    table: TABLES.PLANIFICACIONES_TAREAS,
+    events: ['INSERT', 'UPDATE', 'DELETE'],
+    filter: null
+  },
+  
+  // Configuración para templates de planificaciones
+  PLANIFICACIONES_TEMPLATES: {
+    table: TABLES.PLANIFICACIONES_TEMPLATES,
     events: ['INSERT', 'UPDATE', 'DELETE'],
     filter: null
   }

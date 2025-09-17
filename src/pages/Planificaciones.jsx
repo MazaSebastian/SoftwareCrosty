@@ -27,6 +27,8 @@ import {
 import { SkeletonList } from '../components/SkeletonLoader';
 import { useToast } from '../components/Toast';
 import CalendarioSemanal from '../components/CalendarioSemanal';
+import { usePlanificacionesRealtime } from '../services/planificacionesRealtimeService';
+import SyncIndicator from '../components/SyncIndicator';
 
 const PageContainer = styled(ResponsiveContainer)`
   background: #FFFFFF;
@@ -295,7 +297,25 @@ const Planificaciones = () => {
   const [selectedPlanificacion, setSelectedPlanificacion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { showSuccess, showError } = useToast();
+  const [notificationCount, setNotificationCount] = useState(0);
+  const { showSuccess, showError, showInfo } = useToast();
+
+  // Hook de sincronización en tiempo real (opcional)
+  let planificacionesRealtime = [];
+  let tareasRealtime = [];
+  let connectionStatus = { isConnected: false, reconnectAttempts: 0 };
+  let addListener = () => () => {};
+  
+  try {
+    const realtimeHook = usePlanificacionesRealtime();
+    planificacionesRealtime = realtimeHook.planificaciones || [];
+    tareasRealtime = realtimeHook.tareas || [];
+    connectionStatus = realtimeHook.connectionStatus || { isConnected: false, reconnectAttempts: 0 };
+    addListener = realtimeHook.addListener || (() => () => {});
+  } catch (error) {
+    console.warn('Error cargando hook de sincronización:', error);
+    // Continuar sin sincronización en tiempo real
+  }
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -319,6 +339,99 @@ const Planificaciones = () => {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Configurar listeners de sincronización en tiempo real
+  useEffect(() => {
+    const removeListeners = [];
+
+    // Listener para nuevas planificaciones
+    const removeNuevaPlanificacion = addListener('nueva_planificacion', (nuevaPlanificacion) => {
+      console.log('🆕 Nueva planificación recibida:', nuevaPlanificacion);
+      setPlanificaciones(prev => [nuevaPlanificacion, ...prev]);
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Nueva planificación: ${nuevaPlanificacion.nombre}`);
+    });
+    removeListeners.push(removeNuevaPlanificacion);
+
+    // Listener para planificaciones actualizadas
+    const removePlanificacionActualizada = addListener('planificacion_actualizada', ({ nueva, anterior }) => {
+      console.log('🔄 Planificación actualizada:', { nueva, anterior });
+      setPlanificaciones(prev => prev.map(p => p.id === nueva.id ? nueva : p));
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Planificación actualizada: ${nueva.nombre}`);
+    });
+    removeListeners.push(removePlanificacionActualizada);
+
+    // Listener para planificaciones eliminadas
+    const removePlanificacionEliminada = addListener('planificacion_eliminada', (planificacionEliminada) => {
+      console.log('🗑️ Planificación eliminada:', planificacionEliminada);
+      setPlanificaciones(prev => prev.filter(p => p.id !== planificacionEliminada.id));
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Planificación eliminada: ${planificacionEliminada.nombre}`);
+    });
+    removeListeners.push(removePlanificacionEliminada);
+
+    // Listener para nuevas tareas
+    const removeNuevaTarea = addListener('nueva_tarea', (nuevaTarea) => {
+      console.log('🆕 Nueva tarea recibida:', nuevaTarea);
+      setPlanificaciones(prev => prev.map(p => 
+        p.id === nuevaTarea.planificacionId 
+          ? { ...p, tareas: [...(p.tareas || []), nuevaTarea] }
+          : p
+      ));
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Nueva tarea: ${nuevaTarea.titulo}`);
+    });
+    removeListeners.push(removeNuevaTarea);
+
+    // Listener para tareas actualizadas
+    const removeTareaActualizada = addListener('tarea_actualizada', ({ nueva, anterior }) => {
+      console.log('🔄 Tarea actualizada:', { nueva, anterior });
+      setPlanificaciones(prev => prev.map(p => 
+        p.id === nueva.planificacionId 
+          ? { 
+              ...p, 
+              tareas: (p.tareas || []).map(t => t.id === nueva.id ? nueva : t)
+            }
+          : p
+      ));
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Tarea actualizada: ${nueva.titulo}`);
+    });
+    removeListeners.push(removeTareaActualizada);
+
+    // Listener para tareas eliminadas
+    const removeTareaEliminada = addListener('tarea_eliminada', (tareaEliminada) => {
+      console.log('🗑️ Tarea eliminada:', tareaEliminada);
+      setPlanificaciones(prev => prev.map(p => 
+        p.id === tareaEliminada.planificacionId 
+          ? { 
+              ...p, 
+              tareas: (p.tareas || []).filter(t => t.id !== tareaEliminada.id)
+            }
+          : p
+      ));
+      setNotificationCount(prev => prev + 1);
+      showInfo(`Tarea eliminada: ${tareaEliminada.titulo}`);
+    });
+    removeListeners.push(removeTareaEliminada);
+
+    // Listener para cambios de conexión
+    const removeConnectionChange = addListener('connection', (status) => {
+      console.log('📡 Estado de conexión:', status);
+      if (status.status === 'connected') {
+        showInfo('Sincronización en tiempo real activada');
+      } else if (status.status === 'disconnected') {
+        showError('Sincronización en tiempo real desconectada');
+      }
+    });
+    removeListeners.push(removeConnectionChange);
+
+    // Cleanup
+    return () => {
+      removeListeners.forEach(remove => remove());
+    };
+  }, [addListener, showInfo, showError]);
 
   const cargarDatos = async () => {
     try {
@@ -477,9 +590,16 @@ const Planificaciones = () => {
           <h1>Planificaciones</h1>
           <div className="subtitle">Gestión de tareas y planificación semanal</div>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          ➕ Nueva Planificación
-        </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <SyncIndicator 
+            isConnected={connectionStatus.isConnected}
+            notificationCount={notificationCount}
+            onNotificationClick={() => setNotificationCount(0)}
+          />
+          <Button onClick={() => setIsModalOpen(true)}>
+            ➕ Nueva Planificación
+          </Button>
+        </div>
       </Header>
 
       {loading ? (
