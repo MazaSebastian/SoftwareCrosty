@@ -426,7 +426,8 @@ const Recetas = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    porciones: '',
+    cantidadBase: '1',
+    unidadBase: 'tarta',
     categoria: '',
     ingredientes: []
   });
@@ -483,10 +484,10 @@ const Recetas = () => {
     console.log('🔧 formData:', formData);
     console.log('🔧 selectedReceta:', selectedReceta);
     
-    if (!formData.nombre || !formData.porciones || formData.ingredientes.length === 0) {
+    if (!formData.nombre || !formData.cantidadBase || formData.ingredientes.length === 0) {
       console.log('❌ Validación fallida:', {
         nombre: formData.nombre,
-        porciones: formData.porciones,
+        cantidadBase: formData.cantidadBase,
         ingredientesLength: formData.ingredientes.length
       });
       return;
@@ -495,7 +496,7 @@ const Recetas = () => {
     try {
       const recetaData = {
         ...formData,
-        porciones: parseInt(formData.porciones),
+        cantidadBase: parseFloat(formData.cantidadBase),
         ingredientes: formData.ingredientes.map(ing => ({
           ...ing,
           cantidad: parseFloat(ing.cantidad)
@@ -547,9 +548,9 @@ const Recetas = () => {
     }
   };
 
-  const handleEscalarReceta = (receta) => {
+  const handleEscalarReceta = (receta, factor = 1) => {
     setRecetaParaEscalar(receta);
-    setCantidadEscalado('');
+    setCantidadEscalado(factor.toString());
     setRecetaEscalada(null);
     setIsEscaladoModalOpen(true);
   };
@@ -621,7 +622,8 @@ const Recetas = () => {
     setFormData({
       nombre: '',
       descripcion: '',
-      porciones: '',
+      cantidadBase: '1',
+      unidadBase: 'tarta',
       categoria: '',
       ingredientes: []
     });
@@ -723,6 +725,13 @@ const Recetas = () => {
                         ✏️
                       </button>
                       <button 
+                        className="scale" 
+                        onClick={() => handleEscalarReceta(receta)}
+                        title="Escalar receta"
+                      >
+                        🔄
+                      </button>
+                      <button 
                         className="delete" 
                         onClick={() => handleDelete(receta.id)}
                         title="Eliminar"
@@ -741,6 +750,59 @@ const Recetas = () => {
                       <div className="label">Costo Total</div>
                       <div className="value">{formatCurrency(receta.costoTotal || 0)}</div>
                     </div>
+                  </div>
+                  
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '0.5rem', 
+                    marginBottom: '0.75rem',
+                    justifyContent: 'center'
+                  }}>
+                    <button
+                      onClick={() => handleEscalarReceta(receta, 1)}
+                      style={{
+                        background: '#722F37',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      x1
+                    </button>
+                    <button
+                      onClick={() => handleEscalarReceta(receta, 5)}
+                      style={{
+                        background: '#722F37',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      x5
+                    </button>
+                    <button
+                      onClick={() => handleEscalarReceta(receta, 10)}
+                      style={{
+                        background: '#722F37',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      x10
+                    </button>
                   </div>
                   
                   <div className="ingredientes-list">
@@ -790,15 +852,33 @@ const Recetas = () => {
 
             <FormRow>
               <FormGroup>
-                <label>Porciones *</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={formData.porciones}
-                  onChange={(e) => setFormData({ ...formData, porciones: e.target.value })}
-                  placeholder="8"
-                  required
-                />
+                <label>Cantidad Base *</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.1"
+                    value={formData.cantidadBase}
+                    onChange={(e) => setFormData({ ...formData, cantidadBase: e.target.value })}
+                    placeholder="1"
+                    required
+                    style={{ flex: 1 }}
+                  />
+                  <select
+                    value={formData.unidadBase}
+                    onChange={(e) => setFormData({ ...formData, unidadBase: e.target.value })}
+                    style={{ minWidth: '120px' }}
+                  >
+                    <option value="tarta">Tarta individual</option>
+                    <option value="kg">Kilogramo (kg)</option>
+                    <option value="g">Gramo (g)</option>
+                    <option value="unidad">Unidad</option>
+                    <option value="porcion">Porción</option>
+                  </select>
+                </div>
+                <small style={{ color: '#6B7280', fontSize: '0.8rem' }}>
+                  Cantidad estándar: 1 tarta individual o 1kg de pollo
+                </small>
               </FormGroup>
             </FormRow>
 
