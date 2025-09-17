@@ -53,7 +53,18 @@ export const ventasSupabaseAdapter = {
       console.error('Error al crear venta:', error);
       throw error;
     }
-    return this.transformVentaFromSupabase(data);
+
+    const ventaCreada = this.transformVentaFromSupabase(data);
+    
+    // Crear movimiento de caja automáticamente
+    try {
+      await this.crearMovimientoCajaAutomatico(ventaCreada);
+    } catch (error) {
+      console.error('Error creando movimiento de caja automático:', error);
+      // No lanzar error para no interrumpir la creación de la venta
+    }
+
+    return ventaCreada;
   },
 
   // Actualizar una venta existente
@@ -191,6 +202,49 @@ export const ventasSupabaseAdapter = {
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
+  },
+
+  // Crear movimiento de caja automático basado en una venta
+  async crearMovimientoCajaAutomatico(venta) {
+    try {
+      console.log('💰 Creando movimiento de caja automático para venta:', venta);
+      
+      const usuarioActual = obtenerUsuarioActual();
+      
+      const movimientoCaja = {
+        fecha: venta.fecha || new Date().toISOString(),
+        tipo: 'ingreso',
+        concepto: `Venta: ${venta.recetaNombre}`,
+        monto: parseFloat(venta.subtotal || 0),
+        metodo: venta.metodoPago || 'efectivo',
+        descripcion: `Venta automática: ${venta.cantidad} x ${venta.recetaNombre}`,
+        usuario_id: usuarioActual?.id || venta.usuarioId,
+        usuario_nombre: usuarioActual?.nombre || venta.usuarioNombre || 'Usuario',
+        venta_id: venta.id, // Referencia a la venta original
+        activa: true
+      };
+
+      console.log('📝 Datos del movimiento de caja:', movimientoCaja);
+
+      // Insertar movimiento de caja en Supabase
+      const { data, error } = await supabase
+        .from(TABLES.MOVIMIENTOS_CAJA)
+        .insert(movimientoCaja)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Error creando movimiento de caja automático:', error);
+        throw error;
+      }
+
+      console.log('✅ Movimiento de caja creado automáticamente:', data);
+      return data;
+
+    } catch (error) {
+      console.error('❌ Error en crearMovimientoCajaAutomatico:', error);
+      throw error;
+    }
   },
 
   // Transformar datos locales a formato Supabase
