@@ -318,12 +318,20 @@ const Ventas = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const { showSuccess, showError, showInfo } = useToast();
   
-  // Hook de sincronización en tiempo real
-  const { 
-    ventas: ventasRealtime, 
-    connectionStatus, 
-    addListener 
-  } = useVentasRealtime();
+  // Hook de sincronización en tiempo real (opcional)
+  let ventasRealtime = [];
+  let connectionStatus = { isConnected: false, reconnectAttempts: 0 };
+  let addListener = () => () => {};
+  
+  try {
+    const realtimeHook = useVentasRealtime();
+    ventasRealtime = realtimeHook.ventas || [];
+    connectionStatus = realtimeHook.connectionStatus || { isConnected: false, reconnectAttempts: 0 };
+    addListener = realtimeHook.addListener || (() => () => {});
+  } catch (error) {
+    console.warn('Error cargando hook de sincronización:', error);
+    // Continuar sin sincronización en tiempo real
+  }
   
   const [formData, setFormData] = useState({
     tipo: '',
@@ -340,7 +348,11 @@ const Ventas = () => {
 
   useEffect(() => {
     cargarDatos();
-    setupRealtimeListeners();
+    try {
+      setupRealtimeListeners();
+    } catch (error) {
+      console.warn('Error configurando listeners de tiempo real:', error);
+    }
   }, []);
 
   // Sincronizar ventas locales con las de tiempo real
@@ -500,12 +512,14 @@ const Ventas = () => {
 
   return (
     <PageContainer>
-      {/* Indicador de sincronización */}
-      <SyncIndicator 
-        connectionStatus={connectionStatus}
-        notificationCount={notificationCount}
-        onNotificationClick={handleNotificationClick}
-      />
+      {/* Indicador de sincronización (opcional) */}
+      {connectionStatus && (
+        <SyncIndicator 
+          connectionStatus={connectionStatus}
+          notificationCount={notificationCount}
+          onNotificationClick={handleNotificationClick}
+        />
+      )}
       
       <Header>
         <div>

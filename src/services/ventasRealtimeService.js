@@ -300,35 +300,70 @@ export const useVentasRealtime = () => {
   });
 
   useEffect(() => {
-    // Inicializar el servicio
-    ventasRealtimeService.initialize();
+    let isMounted = true;
 
-    // Listener para nuevas ventas
-    const removeNuevaVentaListener = ventasRealtimeService.addListener('nueva_venta', (venta) => {
-      setVentas(prev => [venta, ...prev]);
-    });
+    const initializeService = async () => {
+      try {
+        // Inicializar el servicio de forma segura
+        await ventasRealtimeService.initialize();
 
-    // Listener para ventas actualizadas
-    const removeVentaActualizadaListener = ventasRealtimeService.addListener('venta_actualizada', ({ nueva, anterior }) => {
-      setVentas(prev => prev.map(v => v.id === nueva.id ? nueva : v));
-    });
+        if (!isMounted) return;
 
-    // Listener para ventas eliminadas
-    const removeVentaEliminadaListener = ventasRealtimeService.addListener('venta_eliminada', (venta) => {
-      setVentas(prev => prev.filter(v => v.id !== venta.id));
-    });
+        // Listener para nuevas ventas
+        const removeNuevaVentaListener = ventasRealtimeService.addListener('nueva_venta', (venta) => {
+          if (isMounted) {
+            setVentas(prev => [venta, ...prev]);
+          }
+        });
 
-    // Listener para estado de conexión
-    const removeConnectionListener = ventasRealtimeService.addListener('connection', (status) => {
-      setConnectionStatus(ventasRealtimeService.getConnectionStatus());
-    });
+        // Listener para ventas actualizadas
+        const removeVentaActualizadaListener = ventasRealtimeService.addListener('venta_actualizada', ({ nueva, anterior }) => {
+          if (isMounted) {
+            setVentas(prev => prev.map(v => v.id === nueva.id ? nueva : v));
+          }
+        });
 
-    // Cleanup
+        // Listener para ventas eliminadas
+        const removeVentaEliminadaListener = ventasRealtimeService.addListener('venta_eliminada', (venta) => {
+          if (isMounted) {
+            setVentas(prev => prev.filter(v => v.id !== venta.id));
+          }
+        });
+
+        // Listener para estado de conexión
+        const removeConnectionListener = ventasRealtimeService.addListener('connection', (status) => {
+          if (isMounted) {
+            setConnectionStatus(ventasRealtimeService.getConnectionStatus());
+          }
+        });
+
+        // Cleanup function
+        return () => {
+          removeNuevaVentaListener();
+          removeVentaActualizadaListener();
+          removeVentaEliminadaListener();
+          removeConnectionListener();
+        };
+      } catch (error) {
+        console.error('Error inicializando servicio de sincronización:', error);
+        if (isMounted) {
+          setConnectionStatus({
+            isConnected: false,
+            reconnectAttempts: 0
+          });
+        }
+      }
+    };
+
+    const cleanup = initializeService();
+
     return () => {
-      removeNuevaVentaListener();
-      removeVentaActualizadaListener();
-      removeVentaEliminadaListener();
-      removeConnectionListener();
+      isMounted = false;
+      if (cleanup && typeof cleanup.then === 'function') {
+        cleanup.then(cleanupFn => cleanupFn && cleanupFn());
+      } else if (cleanup && typeof cleanup === 'function') {
+        cleanup();
+      }
     };
   }, []);
 
