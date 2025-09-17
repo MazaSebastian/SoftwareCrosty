@@ -311,7 +311,10 @@ export async function calcularCostoReceta(receta, insumos = []) {
       unidad: ingrediente.unidad,
       precioUnitario,
       costoIngrediente,
-      insumoUnidad: insumo?.unidad
+      insumoUnidad: insumo?.unidad,
+      insumoPrecioActual: insumo?.precioActual,
+      insumoPrecioUnitario: insumo?.precio_unitario,
+      insumoCompleto: insumo
     });
     
     return total + costoIngrediente;

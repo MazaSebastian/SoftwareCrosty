@@ -912,11 +912,19 @@ const Recetas = () => {
                   }}
                 >
                   <option value="">Seleccionar ingrediente</option>
-                  {insumos.map(insumo => (
-                    <option key={insumo.id} value={insumo.id}>
-                      {insumo.nombre} - {formatCurrency(insumo.precioActual)}/{insumo.unidad}
-                    </option>
-                  ))}
+                  {insumos.map(insumo => {
+                    console.log('🔧 Insumo en dropdown:', {
+                      nombre: insumo.nombre,
+                      precioActual: insumo.precioActual,
+                      precio_unitario: insumo.precio_unitario,
+                      unidad: insumo.unidad
+                    });
+                    return (
+                      <option key={insumo.id} value={insumo.id}>
+                        {insumo.nombre} - {formatCurrency(insumo.precioActual || insumo.precio_unitario || 0)}/{insumo.unidad}
+                      </option>
+                    );
+                  })}
                 </select>
                 
                 <input
