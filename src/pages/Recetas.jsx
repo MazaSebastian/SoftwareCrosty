@@ -249,7 +249,7 @@ const RecetasList = styled.div`
       
       .detail-item {
         .label {
-          color: rgba(255, 255, 255, 0.6);
+          color: #666666;
           font-size: 0.8rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -257,7 +257,7 @@ const RecetasList = styled.div`
         }
         
         .value {
-          color: white;
+          color: #333333;
           font-weight: 600;
         }
       }
@@ -703,7 +703,7 @@ const Recetas = () => {
                     <div className="ingredientes-grid">
                       {receta.ingredientes.map((ingrediente, index) => (
                         <div key={index} className="ingrediente-item">
-                          <span className="ingrediente-nombre">{ingrediente.insumoNombre}</span>
+                          <span className="ingrediente-nombre">{ingrediente.nombre || ingrediente.insumoNombre}</span>
                           <span className="ingrediente-cantidad">
                             {ingrediente.cantidad} {ingrediente.unidad}
                           </span>
