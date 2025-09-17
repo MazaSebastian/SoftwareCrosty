@@ -488,10 +488,14 @@ const Recetas = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta receta?')) {
       try {
+        console.log('🔧 Eliminando receta con ID:', id);
         await eliminarReceta(id);
+        console.log('✅ Receta eliminada exitosamente');
         await cargarDatos();
+        console.log('✅ Datos recargados');
       } catch (error) {
-        console.error('Error al eliminar receta:', error);
+        console.error('❌ Error al eliminar receta:', error);
+        alert('Error al eliminar la receta: ' + error.message);
       }
     }
   };

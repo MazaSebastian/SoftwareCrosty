@@ -147,8 +147,9 @@ export async function eliminarReceta(id) {
     throw new Error('Receta no encontrada');
   }
   
-  recetas[indice].activa = false;
-  return recetas[indice];
+  // Eliminar la receta del array completamente
+  const recetaEliminada = recetas.splice(indice, 1)[0];
+  return recetaEliminada;
 }
 
 // Función para escalar una receta a una cantidad deseada
