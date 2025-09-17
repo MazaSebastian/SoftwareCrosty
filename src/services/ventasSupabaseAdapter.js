@@ -176,7 +176,7 @@ export const ventasSupabaseAdapter = {
     return {
       id: data.id,
       fecha: data.fecha,
-      tipo: data.tipo || 'receta',
+      tipo: 'receta', // Valor por defecto ya que la columna no existe
       recetaId: data.receta_id || null,
       recetaNombre: data.receta_nombre || data.producto || 'Producto',
       cantidad: data.cantidad,
@@ -197,7 +197,7 @@ export const ventasSupabaseAdapter = {
   transformVentaToSupabase(data) {
     return {
       fecha: data.fecha || new Date().toISOString(),
-      tipo: data.tipo || 'receta',
+      // tipo: data.tipo || 'receta', // Columna no existe en la tabla
       producto: data.recetaNombre || 'Producto', // Usar 'producto' en lugar de 'receta_nombre'
       cantidad: data.cantidad || 1,
       precio_unitario: data.precioUnitario || 0,
