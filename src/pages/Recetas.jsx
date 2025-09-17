@@ -265,7 +265,7 @@ const RecetasList = styled.div`
     
     .ingredientes-list {
       .ingredientes-header {
-        color: rgba(255, 255, 255, 0.8);
+        color: #333333;
         font-size: 0.9rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
@@ -286,11 +286,13 @@ const RecetasList = styled.div`
           font-size: 0.85rem;
           
           .ingrediente-nombre {
-            color: white;
+            color: #555555;
+            font-weight: 500;
           }
           
           .ingrediente-cantidad {
-            color: rgba(255, 255, 255, 0.7);
+            color: #333333;
+            font-weight: 600;
           }
         }
       }
