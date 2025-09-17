@@ -47,6 +47,21 @@ const StatCard = styled.div`
   color: #333333;
   transition: transform 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 0;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    min-height: 100px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    min-height: 90px;
+  }
   
   &:hover {
     transform: translateY(-4px);
@@ -79,6 +94,17 @@ const StatCard = styled.div`
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: #6B7280;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.2;
+    
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 1.25rem;
+    }
   }
   
   .stat-subtitle {
