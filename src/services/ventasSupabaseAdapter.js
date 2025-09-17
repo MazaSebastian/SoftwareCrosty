@@ -8,7 +8,6 @@ export const ventasSupabaseAdapter = {
     let query = supabase
       .from(TABLES.VENTAS)
       .select('*')
-      .eq('activa', true)
       .order('fecha', { ascending: false });
 
     if (filtros.fechaInicio) {
@@ -75,11 +74,11 @@ export const ventasSupabaseAdapter = {
     return this.transformVentaFromSupabase(data);
   },
 
-  // Eliminar una venta (desactivar)
+  // Eliminar una venta (eliminar físicamente)
   async eliminarVenta(id) {
     const { error } = await supabase
       .from(TABLES.VENTAS)
-      .update({ activa: false })
+      .delete()
       .eq('id', id);
 
     if (error) {
@@ -93,8 +92,7 @@ export const ventasSupabaseAdapter = {
   async obtenerEstadisticasVentas(filtros = {}) {
     let query = supabase
       .from(TABLES.VENTAS)
-      .select('*')
-      .eq('activa', true);
+      .select('*');
 
     if (filtros.fechaInicio) {
       query = query.gte('fecha', filtros.fechaInicio);
@@ -208,7 +206,6 @@ export const ventasSupabaseAdapter = {
       metodo_pago: data.metodoPago,
       cliente: data.cliente,
       notas: data.notas,
-      activa: data.activa !== false,
     };
   },
 };
