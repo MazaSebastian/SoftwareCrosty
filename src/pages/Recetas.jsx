@@ -537,7 +537,7 @@ const Recetas = () => {
   };
 
   const agregarIngrediente = () => {
-    if (!nuevoIngrediente.insumoId || !nuevoIngrediente.cantidad) return;
+    if (!nuevoIngrediente.insumoId || !nuevoIngrediente.cantidad || !nuevoIngrediente.unidad) return;
 
     const insumo = insumos.find(i => i.id === nuevoIngrediente.insumoId);
     if (!insumo) return;
@@ -781,6 +781,7 @@ const Recetas = () => {
                       unidad: insumo?.unidad || ''
                     });
                   }}
+                  required
                 >
                   <option value="">Seleccionar ingrediente</option>
                   {insumos.map(insumo => (
@@ -799,12 +800,23 @@ const Recetas = () => {
                   placeholder="Cantidad"
                 />
                 
-                <input
-                  type="text"
+                <select
                   value={nuevoIngrediente.unidad}
                   onChange={(e) => setNuevoIngrediente({ ...nuevoIngrediente, unidad: e.target.value })}
-                  placeholder="Unidad"
-                />
+                  required
+                  style={{
+                    border: '2px solid #722F37',
+                    backgroundColor: '#f9fafb'
+                  }}
+                >
+                  <option value="">Seleccionar unidad</option>
+                  <option value="kg">Kilogramo (kg)</option>
+                  <option value="g">Gramo (g)</option>
+                  <option value="l">Litro (l)</option>
+                  <option value="ml">Mililitro (ml)</option>
+                  <option value="unidad">Unidad</option>
+                  <option value="paquete">Paquete</option>
+                </select>
                 
                 <Button type="button" onClick={agregarIngrediente}>
                   ➕
