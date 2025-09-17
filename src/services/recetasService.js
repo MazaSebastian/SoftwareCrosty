@@ -281,14 +281,25 @@ function convertirUnidades(cantidad, unidadOrigen, unidadDestino, precioUnitario
 export async function calcularCostoReceta(receta, insumos = []) {
   await new Promise(resolve => setTimeout(resolve, 100));
   
+  console.log('🔧 calcularCostoReceta iniciado para:', receta.nombre);
+  console.log('🔧 Insumos disponibles:', insumos.length);
+  console.log('🔧 Insumos:', insumos.map(i => ({ nombre: i.nombre, precio: i.precioActual || i.precio_unitario, unidad: i.unidad })));
+  
   if (!receta.ingredientes || receta.ingredientes.length === 0) {
+    console.log('❌ No hay ingredientes en la receta');
     return 0;
   }
+  
+  console.log('🔧 Ingredientes de la receta:', receta.ingredientes);
   
   const costoTotal = receta.ingredientes.reduce((total, ingrediente) => {
     // Buscar el insumo correspondiente para obtener el precio actual
     const insumo = insumos.find(i => i.id === ingrediente.insumoId || i.nombre === ingrediente.nombre);
     const precioUnitario = insumo ? insumo.precioActual || insumo.precio_unitario || 0 : ingrediente.costoUnitario || 0;
+    
+    console.log(`🔧 Procesando ingrediente: ${ingrediente.nombre || ingrediente.insumoNombre}`);
+    console.log(`🔧 Insumo encontrado:`, insumo ? { nombre: insumo.nombre, precio: insumo.precioActual || insumo.precio_unitario, unidad: insumo.unidad } : 'NO ENCONTRADO');
+    console.log(`🔧 Precio unitario usado: ${precioUnitario}`);
     
     // Calcular el costo considerando las unidades del insumo
     let costoIngrediente = 0;
@@ -297,13 +308,16 @@ export async function calcularCostoReceta(receta, insumos = []) {
       // Si las unidades coinciden, usar directamente
       if (insumo.unidad === ingrediente.unidad) {
         costoIngrediente = ingrediente.cantidad * precioUnitario;
+        console.log(`🔧 Unidades coinciden: ${ingrediente.cantidad} × ${precioUnitario} = ${costoIngrediente}`);
       } else {
         // Convertir unidades si es necesario
         costoIngrediente = convertirUnidades(ingrediente.cantidad, ingrediente.unidad, insumo.unidad, precioUnitario);
+        console.log(`🔧 Conversión de unidades: ${ingrediente.cantidad}${ingrediente.unidad} → ${insumo.unidad} = ${costoIngrediente}`);
       }
     } else {
       // Fallback: usar cálculo directo
       costoIngrediente = ingrediente.cantidad * precioUnitario;
+      console.log(`🔧 Fallback directo: ${ingrediente.cantidad} × ${precioUnitario} = ${costoIngrediente}`);
     }
     
     console.log(`🔧 Cálculo ingrediente ${ingrediente.nombre || ingrediente.insumoNombre}:`, {
@@ -319,6 +333,8 @@ export async function calcularCostoReceta(receta, insumos = []) {
     
     return total + costoIngrediente;
   }, 0);
+  
+  console.log(`🔧 Costo total de receta ${receta.nombre}: $${costoTotal}`);
   
   return costoTotal;
 }
