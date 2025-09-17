@@ -37,25 +37,32 @@ const SyncStatus = styled.div`
   font-weight: 600;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-  background: ${props => {
-    switch (props.status) {
-      case 'connected': return 'rgba(16, 185, 129, 0.9)';
-      case 'connecting': return 'rgba(245, 158, 11, 0.9)';
-      case 'disconnected': return 'rgba(239, 68, 68, 0.9)';
-      case 'error': return 'rgba(156, 163, 175, 0.9)';
-      default: return 'rgba(107, 114, 128, 0.9)';
-    }
-  }};
   color: white;
-  border: 1px solid ${props => {
-    switch (props.status) {
-      case 'connected': return 'rgba(16, 185, 129, 0.3)';
-      case 'connecting': return 'rgba(245, 158, 11, 0.3)';
-      case 'disconnected': return 'rgba(239, 68, 68, 0.3)';
-      case 'error': return 'rgba(156, 163, 175, 0.3)';
-      default: return 'rgba(107, 114, 128, 0.3)';
-    }
-  }};
+  
+  &.connected {
+    background: rgba(16, 185, 129, 0.9);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  
+  &.connecting {
+    background: rgba(245, 158, 11, 0.9);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  
+  &.disconnected {
+    background: rgba(239, 68, 68, 0.9);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  &.error {
+    background: rgba(156, 163, 175, 0.9);
+    border: 1px solid rgba(156, 163, 175, 0.3);
+  }
+  
+  &.default {
+    background: rgba(107, 114, 128, 0.9);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+  }
 `;
 
 const SyncIcon = styled.div`
@@ -63,25 +70,16 @@ const SyncIcon = styled.div`
   height: 12px;
   border-radius: 50%;
   position: relative;
-  background: ${props => {
-    switch (props.status) {
-      case 'connected': return '#10B981';
-      case 'connecting': return '#F59E0B';
-      case 'disconnected': return '#EF4444';
-      case 'error': return '#9CA3AF';
-      default: return '#6B7280';
-    }
-  }};
-  animation: ${props => {
-    switch (props.status) {
-      case 'connected': return `${pulse} 2s infinite`;
-      case 'connecting': return `${rotate} 1s linear infinite`;
-      case 'disconnected': return `${pulse} 1s infinite`;
-      default: return 'none';
-    }
-  }};
   
-  ${props => props.status === 'connecting' && `
+  &.connected {
+    background: #10B981;
+    animation: ${pulse} 2s infinite;
+  }
+  
+  &.connecting {
+    background: #F59E0B;
+    animation: ${rotate} 1s linear infinite;
+    
     &::after {
       content: '';
       position: absolute;
@@ -93,7 +91,20 @@ const SyncIcon = styled.div`
       border-radius: 50%;
       transform: translate(-50%, -50%);
     }
-  `}
+  }
+  
+  &.disconnected {
+    background: #EF4444;
+    animation: ${pulse} 1s infinite;
+  }
+  
+  &.error {
+    background: #9CA3AF;
+  }
+  
+  &.default {
+    background: #6B7280;
+  }
 `;
 
 const SyncText = styled.span`
@@ -178,8 +189,8 @@ const SyncIndicator = ({
 
   return (
     <SyncContainer>
-      <SyncStatus status={status}>
-        <SyncIcon status={status} />
+      <SyncStatus className={status}>
+        <SyncIcon className={status} />
         <SyncText>{getStatusText()}</SyncText>
         {notificationCount > 0 && (
           <NotificationBadge onClick={onNotificationClick}>
