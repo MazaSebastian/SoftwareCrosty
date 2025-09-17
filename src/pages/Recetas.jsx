@@ -585,12 +585,14 @@ const Recetas = () => {
   };
 
   const formatCurrency = (amount) => {
+    // Redondear a miles para mayor claridad
+    const roundedAmount = Math.round(amount / 1000) * 1000;
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount);
+    }).format(roundedAmount);
   };
 
   // Calcular estadísticas
