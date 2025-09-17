@@ -339,52 +339,6 @@ const ModalContent = styled.div`
   }
 `;
 
-const Form = styled.form`
-  display: grid;
-  gap: 1rem;
-`;
-
-const FormGroup = styled.div`
-  display: grid;
-  gap: 0.5rem;
-  
-  label {
-    font-weight: 600;
-    color: #374151;
-    font-size: 0.875rem;
-  }
-  
-  input, select, textarea {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-  }
-  
-  textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-`;
-
-const ModalActions = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
-`;
 
 const IngredientesSection = styled.div`
   border: 1px solid #e5e7eb;
