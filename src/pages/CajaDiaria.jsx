@@ -13,6 +13,7 @@ import {
 } from '../services/cajaService';
 import { useApp } from '../context/AppContext';
 import UsuarioSelector from '../components/UsuarioSelector';
+import { useModulosSync } from '../services/modulosSyncService';
 import { 
   FormContainer, 
   FormGroup, 
@@ -264,6 +265,7 @@ const ModalContent = styled.div`
 
 const CajaDiaria = () => {
   const { actualizarEstadisticas } = useApp();
+  const { estadisticasCaja } = useModulosSync(); // Hook de sincronización entre módulos
   const [movimientos, setMovimientos] = useState([]);
   const [saldos, setSaldos] = useState([]);
   const [saldoGeneral, setSaldoGeneral] = useState(null);
@@ -283,6 +285,20 @@ const CajaDiaria = () => {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Actualizar datos cuando cambien las estadísticas de caja (por sincronización con ventas)
+  useEffect(() => {
+    if (estadisticasCaja && estadisticasCaja.saldoTotal !== undefined) {
+      console.log('🔄 Actualizando caja diaria por sincronización con ventas:', estadisticasCaja);
+      // Actualizar el saldo general con los datos sincronizados
+      setSaldoGeneral(prev => ({
+        ...prev,
+        saldoTotal: estadisticasCaja.saldoTotal,
+        totalIngresos: estadisticasCaja.totalIngresos,
+        totalEgresos: estadisticasCaja.totalEgresos
+      }));
+    }
+  }, [estadisticasCaja]);
 
   const cargarDatos = async () => {
     try {
