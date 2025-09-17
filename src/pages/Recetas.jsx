@@ -646,6 +646,28 @@ const Recetas = () => {
       }).format(amount);
     }
     
+    // Para valores grandes, truncar a miles
+    const truncatedAmount = Math.floor(amount / 1000) * 1000;
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(truncatedAmount);
+  };
+
+  // Función específica para costos de recetas (sin .000)
+  const formatCurrencyReceta = (amount) => {
+    // Para valores pequeños (menos de 1000), mostrar el valor completo
+    if (amount < 1000) {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    
     // Para valores grandes, truncar a miles y quitar ceros innecesarios
     const truncatedAmount = Math.floor(amount / 1000) * 1000;
     const formatted = new Intl.NumberFormat('es-AR', {
@@ -655,7 +677,7 @@ const Recetas = () => {
       maximumFractionDigits: 0
     }).format(truncatedAmount);
     
-    // Quitar los ceros innecesarios al final
+    // Quitar los ceros innecesarios al final (solo para costos de recetas)
     return formatted.replace(/\.000$/, '');
   };
 
@@ -706,7 +728,7 @@ const Recetas = () => {
             <div className="stat-title">Costo Promedio</div>
             <div className="stat-icon">💰</div>
           </div>
-          <div className="stat-value">{formatCurrency(costoPromedio)}</div>
+          <div className="stat-value">{formatCurrencyReceta(costoPromedio)}</div>
           <div className="stat-subtitle">
             Por receta
           </div>
@@ -761,7 +783,7 @@ const Recetas = () => {
                     </div>
                     <div className="detail-item">
                       <div className="label">Costo Total</div>
-                      <div className="value">{formatCurrency(receta.costoTotal || 0)}</div>
+                      <div className="value">{formatCurrencyReceta(receta.costoTotal || 0)}</div>
                     </div>
                   </div>
                   
