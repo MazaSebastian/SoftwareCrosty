@@ -73,13 +73,26 @@ export async function crearInsumo(insumo) {
   console.log('🔧 crearInsumo llamado con:', insumo);
   console.log('🔧 Usuario actual:', usuarioActual);
   
+  // Calcular precio unitario basado en la cantidad
+  const cantidad = parseFloat(insumo.cantidad) || 1;
+  const precioTotal = parseFloat(insumo.precioActual) || 0;
+  const precioUnitario = precioTotal / cantidad;
+  
+  console.log('🔧 Creando insumo con precio unitario:', {
+    nombre: insumo.nombre,
+    cantidad,
+    precioTotal,
+    precioUnitario,
+    unidad: insumo.unidad
+  });
+  
   const nuevoInsumo = {
     nombre: insumo.nombre,
     categoria: insumo.categoria,
     unidad: insumo.unidad,
-    cantidad: parseFloat(insumo.cantidad) || 0,
-    precio_unitario: parseFloat(insumo.precioActual) || 0,
-    stock_actual: parseFloat(insumo.cantidad) || 0, // Usar cantidad como stock inicial
+    cantidad: cantidad,
+    precio_unitario: precioUnitario,
+    stock_actual: cantidad, // Usar cantidad como stock inicial
     stock_minimo: 0, // Valor por defecto
     proveedor: insumo.proveedor || null,
     descripcion: insumo.descripcion || null,
@@ -215,7 +228,7 @@ export async function eliminarInsumo(id) {
 }
 
 // Funciones para gestión de precios
-export async function actualizarPrecioInsumo(id, nuevoPrecio, razon = '') {
+export async function actualizarPrecioInsumo(id, nuevoPrecio, razon = '', cantidadComprada = 1) {
   await new Promise(resolve => setTimeout(resolve, 200));
   
   const insumo = await obtenerInsumoPorId(id);
@@ -225,8 +238,19 @@ export async function actualizarPrecioInsumo(id, nuevoPrecio, razon = '') {
   
   const precioAnterior = insumo.precioActual;
   
+  // Calcular precio unitario basado en la cantidad comprada
+  const precioUnitario = nuevoPrecio / cantidadComprada;
+  
+  console.log('🔧 Actualizando precio insumo:', {
+    nombre: insumo.nombre,
+    precioTotal: nuevoPrecio,
+    cantidadComprada,
+    precioUnitario,
+    unidad: insumo.unidad
+  });
+  
   // Actualizar precio del insumo
-  insumos[insumos.findIndex(i => i.id === id)].precioActual = nuevoPrecio;
+  insumos[insumos.findIndex(i => i.id === id)].precioActual = precioUnitario;
   insumos[insumos.findIndex(i => i.id === id)].precioAnterior = precioAnterior;
   insumos[insumos.findIndex(i => i.id === id)].fechaUltimoPrecio = new Date().toISOString();
   
