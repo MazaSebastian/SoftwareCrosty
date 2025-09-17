@@ -830,7 +830,6 @@ const Recetas = () => {
                       unidad: insumo?.unidad || ''
                     });
                   }}
-                  required
                 >
                   <option value="">Seleccionar ingrediente</option>
                   {insumos.map(insumo => (
@@ -852,7 +851,6 @@ const Recetas = () => {
                 <select
                   value={nuevoIngrediente.unidad}
                   onChange={(e) => setNuevoIngrediente({ ...nuevoIngrediente, unidad: e.target.value })}
-                  required
                   style={{
                     border: '2px solid #722F37',
                     backgroundColor: '#f9fafb'
