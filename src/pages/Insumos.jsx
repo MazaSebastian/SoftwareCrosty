@@ -487,15 +487,6 @@ const Insumos = () => {
     });
   };
 
-  // Calcular estadísticas
-  const totalInsumos = insumos.length;
-  const categorias = [...new Set(insumos.map(i => i.categoria))].length;
-  const valorTotalInventario = insumos.reduce((sum, i) => {
-    const cantidad = parseFloat(i.cantidad) || 0;
-    const precio = parseFloat(i.precioActual) || 0;
-    return sum + (cantidad * precio);
-  }, 0);
-
   return (
     <PageContainer>
       <Header>
@@ -507,41 +498,6 @@ const Insumos = () => {
           ➕ Nuevo Insumo
         </Button>
       </Header>
-
-      <StatsGridStyled>
-        <StatCard className="info">
-          <div className="stat-header">
-            <div className="stat-title">Total Insumos</div>
-            <div className="stat-icon">🥬</div>
-          </div>
-          <div className="stat-value">{totalInsumos}</div>
-          <div className="stat-subtitle">
-            Ingredientes registrados
-          </div>
-        </StatCard>
-
-        <StatCard className="success">
-          <div className="stat-header">
-            <div className="stat-title">Categorías</div>
-            <div className="stat-icon">📂</div>
-          </div>
-          <div className="stat-value">{categorias}</div>
-          <div className="stat-subtitle">
-            Diferentes categorías
-          </div>
-        </StatCard>
-
-        <StatCard className="warning">
-          <div className="stat-header">
-            <div className="stat-title">Valor Total Inventario</div>
-            <div className="stat-icon">📦</div>
-          </div>
-          <div className="stat-value">{formatCurrency(valorTotalInventario)}</div>
-          <div className="stat-subtitle">
-            Valor total en stock
-          </div>
-        </StatCard>
-      </StatsGridStyled>
 
       <ContentGrid>
         <Section>
