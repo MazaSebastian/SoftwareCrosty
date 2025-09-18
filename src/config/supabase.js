@@ -38,7 +38,8 @@ export const TABLES = {
   PLANIFICACIONES_TEMPLATES: 'planificaciones_templates',
   BACKUPS: 'backups',
   CONFIGURACION: 'configuracion',
-  AUTOMATIZACION_PRECIOS: 'automatizacion_precios'
+  AUTOMATIZACION_PRECIOS: 'automatizacion_precios',
+  NOTIFICACIONES: 'notificaciones'
 };
 
 // Configuración de políticas RLS (Row Level Security)

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { obtenerInsumos, crearInsumo, actualizarInsumo, eliminarInsumo, obtenerHistorialPrecios, actualizarPrecioInsumo } from '../services/insumosService';
+import { verificarAlertasStock } from '../services/notificacionesService';
 import { SkeletonList } from '../components/SkeletonLoader';
 import { LoadingButton } from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
@@ -353,6 +354,9 @@ const Insumos = () => {
       setLoading(true);
       const insumosData = await obtenerInsumos();
       setInsumos(insumosData);
+      
+      // Verificar alertas de stock después de cargar insumos
+      await verificarAlertasStock(insumosData);
     } catch (error) {
       console.error('Error al cargar insumos:', error);
       showError('Error al cargar los insumos');

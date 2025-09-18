@@ -8,6 +8,7 @@ import { SectionLoading } from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import LogoutButton from './components/LogoutButton';
 import { ToastProvider } from './components/Toast';
+import { useNotificaciones } from './hooks/useNotificaciones';
 import './App.css';
 
 // Lazy loading de páginas para mejorar la velocidad de carga
@@ -27,6 +28,9 @@ const Planificaciones = lazy(() => import('./pages/Planificaciones'));
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Hook de notificaciones
+  const { contadores, marcarSectorLeido } = useNotificaciones();
 
   // Funciones para manejar el menú móvil
   const toggleSidebar = () => {
@@ -145,6 +149,7 @@ function App() {
               onSectionChange={handleSectionChange}
               isOpen={isSidebarOpen}
               onClose={closeSidebar}
+              contadoresNotificaciones={contadores}
             />
 
             <main className="main-content">

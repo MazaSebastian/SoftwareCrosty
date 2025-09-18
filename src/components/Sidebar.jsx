@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import NotificationBadge from './NotificationBadge';
 
 const SidebarContainer = styled.div`
   width: 250px;
@@ -115,7 +116,7 @@ const NavItem = styled.button`
   }
 `;
 
-const Sidebar = ({ sections, currentSection, onSectionChange, isOpen, onClose }) => {
+const Sidebar = ({ sections, currentSection, onSectionChange, isOpen, onClose, contadoresNotificaciones = {} }) => {
   // Agrupar secciones por categoría
   const groupedSections = sections.reduce((acc, section) => {
     const category = section.category || 'Otros';
@@ -146,16 +147,21 @@ const Sidebar = ({ sections, currentSection, onSectionChange, isOpen, onClose })
           {Object.entries(groupedSections).map(([category, categorySections]) => (
             <CategorySection key={category}>
               <CategoryTitle>{category}</CategoryTitle>
-              {categorySections.map(section => (
-                <NavItem
-                  key={section.id}
-                  className={currentSection === section.id ? 'active' : ''}
-                  onClick={() => handleSectionClick(section.id)}
-                >
-                  <span className="nav-icon">{section.icon}</span>
-                  <span className="nav-text">{section.name}</span>
-                </NavItem>
-              ))}
+              {categorySections.map(section => {
+                const contador = contadoresNotificaciones[section.sector] || 0;
+                return (
+                  <NavItem
+                    key={section.id}
+                    className={currentSection === section.id ? 'active' : ''}
+                    onClick={() => handleSectionClick(section.id)}
+                  >
+                    <NotificationBadge count={contador}>
+                      <span className="nav-icon">{section.icon}</span>
+                    </NotificationBadge>
+                    <span className="nav-text">{section.name}</span>
+                  </NavItem>
+                );
+              })}
             </CategorySection>
           ))}
         </NavMenu>
