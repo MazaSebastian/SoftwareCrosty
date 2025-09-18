@@ -1,6 +1,13 @@
 // Importar servicio de usuarios y Supabase
 import { obtenerUsuarioActual, obtenerNombreCompleto } from './usuariosService';
 import { supabase, TABLES } from '../config/supabase';
+import { 
+  calcularCostoRecetaMejorado, 
+  calcularCostoPorUnidad as calcularCostoPorUnidadMejorado,
+  escalarRecetaConCostos,
+  formatCurrency,
+  formatCurrencyDetailed
+} from './calculadoraCostos';
 
 // Datos mock para desarrollo - Iniciando con datos limpios
 let recetas = [];
@@ -38,38 +45,38 @@ export async function obtenerRecetasConCostos(insumos = []) {
     const recetasData = await obtenerRecetas();
     console.log('🔧 Recetas obtenidas:', recetasData);
     
-    const recetasConCostos = await Promise.all(
-      recetasData.map(async (receta) => {
-        const costoTotal = await calcularCostoReceta(receta, insumos);
-        const costoPorUnidad = await calcularCostoPorUnidad(receta, insumos);
-        
-        return {
-          ...receta,
-          costoTotal,
-          costoPorUnidad,
-          costoPorUnidadFormateado: `$${costoPorUnidad.toFixed(2)} por ${receta.unidad_base || receta.unidadBase || 'unidad'}`
-        };
-      })
-    );
+    const recetasConCostos = recetasData.map((receta) => {
+      const calculo = calcularCostoRecetaMejorado(receta, insumos);
+      const calculoPorUnidad = calcularCostoPorUnidadMejorado(receta, insumos);
+      
+      return {
+        ...receta,
+        costoTotal: calculo.costoTotal,
+        costoPorUnidad: calculoPorUnidad.costoPorUnidad,
+        ingredientesConCosto: calculo.ingredientes,
+        costoPorUnidadFormateado: `${formatCurrency(calculoPorUnidad.costoPorUnidad)} por ${receta.unidad_base || receta.unidadBase || 'unidad'}`,
+        resumen: calculo.resumen
+      };
+    });
     
     console.log('🔧 Recetas con costos calculados:', recetasConCostos);
     return recetasConCostos.sort((a, b) => a.nombre.localeCompare(b.nombre));
   } catch (error) {
     console.error('❌ Error en obtenerRecetasConCostos:', error);
     // Fallback a datos locales
-    const recetasConCostos = await Promise.all(
-      recetas.map(async (receta) => {
-        const costoTotal = await calcularCostoReceta(receta, insumos);
-        const costoPorUnidad = await calcularCostoPorUnidad(receta, insumos);
-        
-        return {
-          ...receta,
-          costoTotal,
-          costoPorUnidad,
-          costoPorUnidadFormateado: `$${costoPorUnidad.toFixed(2)} por ${receta.unidadBase}`
-        };
-      })
-    );
+    const recetasConCostos = recetas.map((receta) => {
+      const calculo = calcularCostoRecetaMejorado(receta, insumos);
+      const calculoPorUnidad = calcularCostoPorUnidadMejorado(receta, insumos);
+      
+      return {
+        ...receta,
+        costoTotal: calculo.costoTotal,
+        costoPorUnidad: calculoPorUnidad.costoPorUnidad,
+        ingredientesConCosto: calculo.ingredientes,
+        costoPorUnidadFormateado: `${formatCurrency(calculoPorUnidad.costoPorUnidad)} por ${receta.unidadBase}`,
+        resumen: calculo.resumen
+      };
+    });
     
     return recetasConCostos.sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
@@ -211,7 +218,7 @@ export async function eliminarReceta(id) {
 }
 
 // Función para escalar una receta a una cantidad deseada
-export async function escalarReceta(receta, cantidadDeseada) {
+export async function escalarReceta(receta, cantidadDeseada, insumos = []) {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   if (!receta || !receta.ingredientes) {
@@ -219,26 +226,17 @@ export async function escalarReceta(receta, cantidadDeseada) {
   }
   
   // Calcular factor de escalado
-  const factorEscalado = cantidadDeseada / receta.cantidadBase;
+  const factorEscalado = cantidadDeseada / (receta.cantidadBase || receta.cantidad_base || 1);
   
-  // Escalar ingredientes
-  const ingredientesEscalados = receta.ingredientes.map(ingrediente => ({
-    ...ingrediente,
-    cantidad: ingrediente.cantidad * factorEscalado
-  }));
+  // Usar la nueva calculadora para escalar con costos
+  const resultadoEscalado = escalarRecetaConCostos(receta, factorEscalado, insumos);
   
-  // Crear receta escalada
-  const recetaEscalada = {
-    ...receta,
-    id: `${receta.id}-escalada-${Date.now()}`,
-    cantidadBase: cantidadDeseada,
-    rendimiento: cantidadDeseada,
-    ingredientes: ingredientesEscalados,
-    factorEscalado: factorEscalado,
-    createdAt: new Date().toISOString()
+  return {
+    ...resultadoEscalado.recetaEscalada,
+    calculo: resultadoEscalado.calculo,
+    factorEscalado: resultadoEscalado.factorEscalado,
+    cantidadEscalada: resultadoEscalado.cantidadEscalada
   };
-  
-  return recetaEscalada;
 }
 
 // Función para convertir unidades y calcular costo
@@ -277,77 +275,22 @@ function convertirUnidades(cantidad, unidadOrigen, unidadDestino, precioUnitario
   return cantidad * precioUnitario;
 }
 
-// Función para calcular costo de receta con precios actuales de insumos
+// Función para calcular costo de receta con precios actuales de insumos (LEGACY - usar calcularCostoRecetaMejorado)
 export async function calcularCostoReceta(receta, insumos = []) {
   await new Promise(resolve => setTimeout(resolve, 100));
   
-  console.log('🔧 calcularCostoReceta iniciado para:', receta.nombre);
-  console.log('🔧 Insumos disponibles:', insumos.length);
-  console.log('🔧 Insumos:', insumos.map(i => ({ nombre: i.nombre, precio: i.precioActual || i.precio_unitario, unidad: i.unidad })));
-  
-  if (!receta.ingredientes || receta.ingredientes.length === 0) {
-    console.log('❌ No hay ingredientes en la receta');
-    return 0;
-  }
-  
-  console.log('🔧 Ingredientes de la receta:', receta.ingredientes);
-  
-  const costoTotal = receta.ingredientes.reduce((total, ingrediente) => {
-    // Buscar el insumo correspondiente para obtener el precio actual
-    const insumo = insumos.find(i => i.id === ingrediente.insumoId || i.nombre === ingrediente.nombre);
-    const precioUnitario = insumo ? insumo.precioActual || insumo.precio_unitario || 0 : ingrediente.costoUnitario || 0;
-    
-    console.log(`🔧 Procesando ingrediente: ${ingrediente.nombre || ingrediente.insumoNombre}`);
-    console.log(`🔧 Insumo encontrado:`, insumo ? { nombre: insumo.nombre, precio: insumo.precioActual || insumo.precio_unitario, unidad: insumo.unidad } : 'NO ENCONTRADO');
-    console.log(`🔧 Precio unitario usado: ${precioUnitario}`);
-    
-    // Calcular el costo considerando las unidades del insumo
-    let costoIngrediente = 0;
-    
-    if (insumo && insumo.unidad && ingrediente.unidad) {
-      // Si las unidades coinciden, usar directamente
-      if (insumo.unidad === ingrediente.unidad) {
-        costoIngrediente = ingrediente.cantidad * precioUnitario;
-        console.log(`🔧 Unidades coinciden: ${ingrediente.cantidad} × ${precioUnitario} = ${costoIngrediente}`);
-      } else {
-        // Convertir unidades si es necesario
-        costoIngrediente = convertirUnidades(ingrediente.cantidad, ingrediente.unidad, insumo.unidad, precioUnitario);
-        console.log(`🔧 Conversión de unidades: ${ingrediente.cantidad}${ingrediente.unidad} → ${insumo.unidad} = ${costoIngrediente}`);
-      }
-    } else {
-      // Fallback: usar cálculo directo
-      costoIngrediente = ingrediente.cantidad * precioUnitario;
-      console.log(`🔧 Fallback directo: ${ingrediente.cantidad} × ${precioUnitario} = ${costoIngrediente}`);
-    }
-    
-    console.log(`🔧 Cálculo ingrediente ${ingrediente.nombre || ingrediente.insumoNombre}:`, {
-      cantidad: ingrediente.cantidad,
-      unidad: ingrediente.unidad,
-      precioUnitario,
-      costoIngrediente,
-      insumoUnidad: insumo?.unidad,
-      insumoPrecioActual: insumo?.precioActual,
-      insumoPrecioUnitario: insumo?.precio_unitario,
-      insumoCompleto: insumo
-    });
-    
-    return total + costoIngrediente;
-  }, 0);
-  
-  console.log(`🔧 Costo total de receta ${receta.nombre}: $${costoTotal}`);
-  
-  return costoTotal;
+  // Usar la nueva calculadora mejorada
+  const calculo = calcularCostoRecetaMejorado(receta, insumos);
+  return calculo.costoTotal;
 }
 
-// Función para calcular costo por unidad
+// Función para calcular costo por unidad (LEGACY - usar calcularCostoPorUnidadMejorado)
 export async function calcularCostoPorUnidad(receta, insumos = []) {
   await new Promise(resolve => setTimeout(resolve, 100));
   
-  const costoTotal = await calcularCostoReceta(receta, insumos);
-  const rendimiento = receta.rendimiento || receta.cantidad_base || 1;
-  const costoPorUnidad = costoTotal / rendimiento;
-  
-  return costoPorUnidad;
+  // Usar la nueva calculadora mejorada
+  const calculo = calcularCostoPorUnidadMejorado(receta, insumos);
+  return calculo.costoPorUnidad;
 }
 
 export async function calcularPrecioVenta(costoTotal, margenGanancia = 0.3) {

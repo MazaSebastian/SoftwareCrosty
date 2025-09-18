@@ -19,6 +19,7 @@ import {
   FormActions, 
   FormButton 
 } from '../components/FormResponsive';
+import DesgloseCostos from '../components/DesgloseCostos';
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -522,14 +523,13 @@ const Recetas = () => {
     
     try {
       const cantidad = parseFloat(cantidadEscalado);
-      const recetaEscaladaData = await escalarReceta(recetaParaEscalar, cantidad);
-      const costoTotal = await calcularCostoReceta(recetaEscaladaData, insumos);
-      const costoPorUnidad = await calcularCostoPorUnidad(recetaEscaladaData, insumos);
+      const recetaEscaladaData = await escalarReceta(recetaParaEscalar, cantidad, insumos);
       
       setRecetaEscalada({
         ...recetaEscaladaData,
-        costoTotal,
-        costoPorUnidad
+        costoTotal: recetaEscaladaData.calculo?.costoTotal || 0,
+        costoPorUnidad: recetaEscaladaData.calculo?.costoTotal / cantidad || 0,
+        ingredientesConCosto: recetaEscaladaData.calculo?.ingredientes || []
       });
     } catch (error) {
       console.error('Error al escalar receta:', error);
@@ -815,6 +815,17 @@ const Recetas = () => {
                       ))}
                     </div>
                   </div>
+                  
+                  {/* Desglose de costos */}
+                  {receta.ingredientesConCosto && receta.ingredientesConCosto.length > 0 && (
+                    <DesgloseCostos
+                      receta={receta}
+                      ingredientesConCosto={receta.ingredientesConCosto}
+                      costoTotal={receta.costoTotal || 0}
+                      cantidadBase={receta.cantidadBase || receta.cantidad_base || 1}
+                      unidadBase={receta.unidadBase || receta.unidad_base || 'unidad'}
+                    />
+                  )}
                 </div>
               ))
             )}
