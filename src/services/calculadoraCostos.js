@@ -89,6 +89,41 @@ export function calcularCostoIngrediente(ingrediente, insumo) {
   const cantidadComprada = insumo.cantidad || insumo.cantidadComprada || 1;
   const unidadComprada = insumo.unidad || insumo.unidadComprada || 'unidad';
 
+  console.log(`🔧 Datos del insumo ${insumo.nombre}:`, {
+    precioTotal,
+    cantidadComprada,
+    unidadComprada
+  });
+
+  // CASO ESPECIAL: Si el insumo es huevos y se vende por maple
+  if (insumo.nombre && insumo.nombre.toLowerCase().includes('huevo') && unidadComprada === 'maple') {
+    // Precio por huevo individual = precio del maple ÷ 30 huevos
+    const precioPorHuevo = precioTotal / 30;
+    
+    // Si la receta pide huevos individuales
+    if (unidadNecesaria === 'unidad') {
+      const costoIngrediente = cantidadNecesaria * precioPorHuevo;
+      
+      console.log(`🔧 Cálculo especial para huevos:`, {
+        cantidadNecesaria,
+        unidadNecesaria,
+        precioTotal,
+        precioPorHuevo,
+        costoIngrediente
+      });
+
+      return {
+        costo: costoIngrediente,
+        cantidadNecesaria,
+        unidadNecesaria,
+        cantidadComprada: 30, // 30 huevos por maple
+        unidadComprada: 'maple',
+        precioPorUnidadBase: precioPorHuevo,
+        cantidadEnUnidadBase: cantidadNecesaria
+      };
+    }
+  }
+
   // Calcular precio por unidad base del insumo
   const precioPorUnidadBase = precioTotal / cantidadComprada;
 
