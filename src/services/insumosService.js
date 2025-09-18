@@ -324,7 +324,6 @@ export async function obtenerEstadisticasInsumos() {
     insumosActivos,
     insumosBajoStock,
     categorias: categorias.length,
-    totalValorStock,
-    promedioPrecio: totalInsumos > 0 ? insumos.reduce((sum, i) => sum + i.precioActual, 0) / totalInsumos : 0
+    totalValorStock
   };
 }

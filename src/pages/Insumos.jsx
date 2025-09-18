@@ -490,9 +490,11 @@ const Insumos = () => {
   // Calcular estadísticas
   const totalInsumos = insumos.length;
   const categorias = [...new Set(insumos.map(i => i.categoria))].length;
-  const precioPromedio = insumos.length > 0 
-    ? insumos.reduce((sum, i) => sum + i.precioActual, 0) / insumos.length 
-    : 0;
+  const valorTotalInventario = insumos.reduce((sum, i) => {
+    const cantidad = parseFloat(i.cantidad) || 0;
+    const precio = parseFloat(i.precioActual) || 0;
+    return sum + (cantidad * precio);
+  }, 0);
 
   return (
     <PageContainer>
@@ -531,12 +533,12 @@ const Insumos = () => {
 
         <StatCard className="warning">
           <div className="stat-header">
-            <div className="stat-title">Precio Promedio</div>
-            <div className="stat-icon">💰</div>
+            <div className="stat-title">Valor Total Inventario</div>
+            <div className="stat-icon">📦</div>
           </div>
-          <div className="stat-value">{formatCurrency(precioPromedio)}</div>
+          <div className="stat-value">{formatCurrency(valorTotalInventario)}</div>
           <div className="stat-subtitle">
-            Por unidad
+            Valor total en stock
           </div>
         </StatCard>
       </StatsGridStyled>
