@@ -38,7 +38,16 @@ export const useNotificaciones = () => {
       
       setContadores(nuevosContadores);
     } catch (error) {
-      console.error('Error actualizando contadores de notificaciones:', error);
+      console.warn('⚠️ Error actualizando contadores de notificaciones:', error);
+      // En caso de error, mantener contadores en 0
+      setContadores({
+        caja: 0,
+        ventas: 0,
+        insumos: 0,
+        planificaciones: 0,
+        reportes: 0,
+        sistema: 0
+      });
     } finally {
       setLoading(false);
     }

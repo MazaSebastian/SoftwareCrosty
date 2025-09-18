@@ -82,7 +82,15 @@ export async function obtenerNotificacionesPorSector(sector) {
       .eq('estado', ESTADOS.PENDIENTE)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.warn('⚠️ Error obteniendo notificaciones desde Supabase:', error);
+      // Si la tabla no existe, retornar array vacío
+      if (error.code === 'PGRST205') {
+        console.warn('⚠️ Tabla notificaciones no encontrada, usando fallback local');
+        return [];
+      }
+      throw error;
+    }
     return data || [];
   } catch (error) {
     console.error('❌ Error obteniendo notificaciones:', error);
@@ -162,7 +170,15 @@ export async function obtenerTodasNotificacionesPendientes() {
       .eq('estado', ESTADOS.PENDIENTE)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.warn('⚠️ Error obteniendo todas las notificaciones desde Supabase:', error);
+      // Si la tabla no existe, retornar array vacío
+      if (error.code === 'PGRST205') {
+        console.warn('⚠️ Tabla notificaciones no encontrada, usando fallback local');
+        return [];
+      }
+      throw error;
+    }
     return data || [];
   } catch (error) {
     console.error('❌ Error obteniendo todas las notificaciones:', error);
