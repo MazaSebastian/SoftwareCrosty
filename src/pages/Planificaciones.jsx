@@ -27,6 +27,7 @@ import {
 import { SkeletonList } from '../components/SkeletonLoader';
 import { useToast } from '../components/Toast';
 import CalendarioSemanal from '../components/CalendarioSemanal';
+import CalendarioMensual from '../components/CalendarioMensual';
 import { usePlanificacionesRealtime } from '../services/planificacionesRealtimeService';
 import SyncIndicator from '../components/SyncIndicator';
 
@@ -298,6 +299,7 @@ const Planificaciones = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [vistaCalendario, setVistaCalendario] = useState('semanal'); // 'semanal' o 'mensual'
   const { showSuccess, showError, showInfo } = useToast();
 
   // Hook de sincronización en tiempo real (opcional)
@@ -588,7 +590,7 @@ const Planificaciones = () => {
       <Header>
         <div>
           <h1>Planificaciones</h1>
-          <div className="subtitle">Gestión de tareas y planificación semanal</div>
+          <div className="subtitle">Gestión de tareas y planificación</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <SyncIndicator 
@@ -596,6 +598,24 @@ const Planificaciones = () => {
             notificationCount={notificationCount}
             onNotificationClick={() => setNotificationCount(0)}
           />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <select
+              value={vistaCalendario}
+              onChange={(e) => setVistaCalendario(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                border: '1px solid #E5E7EB',
+                borderRadius: '6px',
+                backgroundColor: 'white',
+                color: '#374151',
+                fontSize: '0.875rem',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="semanal">📅 Vista Semanal</option>
+              <option value="mensual">📆 Vista Mensual</option>
+            </select>
+          </div>
           <Button onClick={() => setIsModalOpen(true)}>
             ➕ Nueva Planificación
           </Button>
@@ -654,20 +674,35 @@ const Planificaciones = () => {
 
           <ContentGrid>
             <Section style={{ gridColumn: '1 / -1' }}>
-              <h3>📅 Calendario Semanal</h3>
-              <CalendarioSemanal
-                planificaciones={planificaciones}
-                onTareaClick={handleTareaClick}
-                onDiaClick={handleDiaClick}
-              />
+              <h3>
+                {vistaCalendario === 'semanal' ? '📅 Calendario Semanal' : '📆 Calendario Mensual'}
+              </h3>
+              {vistaCalendario === 'semanal' ? (
+                <CalendarioSemanal
+                  planificaciones={planificaciones}
+                  onTareaClick={handleTareaClick}
+                  onDiaClick={handleDiaClick}
+                />
+              ) : (
+                <CalendarioMensual
+                  planificaciones={planificaciones}
+                  onTareaClick={handleTareaClick}
+                  onDiaClick={handleDiaClick}
+                />
+              )}
             </Section>
 
             <Section>
-              <h3>📋 Planificaciones de la Semana</h3>
+              <h3>
+                {vistaCalendario === 'semanal' ? '📋 Planificaciones de la Semana' : '📋 Planificaciones del Mes'}
+              </h3>
               <TareasList>
                 {planificaciones.length === 0 ? (
                   <div style={{ textAlign: 'center', color: '#6B7280', padding: '2rem' }}>
-                    No hay planificaciones para esta semana
+                    {vistaCalendario === 'semanal' 
+                      ? 'No hay planificaciones para esta semana' 
+                      : 'No hay planificaciones para este mes'
+                    }
                   </div>
                 ) : (
                   planificaciones.map(planificacion => (
